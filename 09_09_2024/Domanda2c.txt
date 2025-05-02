@@ -1,0 +1,75 @@
+Descrivere: cosa sono i semafori, come operano e qual è la loro principale caratteristica.
+
+I semafori sono stati introdotti da Dijkstra nel 1965. Si tratta di una variabile di sistema, gestita quindi dal kernel, intera e maggiore di 0. I processi che richiedono l'utilizzo della variabile semaforo possono eseguire operazioni di incremento oppure di decremento. 
+Considerando S la variabile di tipo semaforo, le operazioni di base che posso fare con essa sono le seguenti:
+
+1) init(S, K);
+- In questo caso vado ad inizializzare il semaforo S al valore K.
+
+2) P(S);
+- Operazione di decremento del semaforo S.
+
+3) V(S);
+- Operazione di incremento del semaforo S.
+
+La variabile semaforo risulta dunque più potente rispetto al classico lock mutex in quanto permette un molteplice utilizzo.
+Distinguiamo dunque semafori binari e semafori contatori.
+Il semaforo binario è definito come tale in quanto può assumere essenzialmente due valori: 0 e 1. L'utilizzo del semaforo binario consente dunque di risolvere due problematiche fondamentali nella sincronizzazione:
+
+- Gestione della Sezione Critica.
+- Gestione delle precedenze.
+
+Consideriamo dunque questi due problemi di sincronizzazione. 
+Il problema della Sezione Critica nasce dal fatto che quando si hanno processi paralleli/concorrenti che accedono ad una risorsa
+condivisa è possibile che si crei inconsistenza nei dati. La soluzione sta dunque nel rendere atomiche le operazioni con questi dati. Introducendo dunque una regione critica. In questo modo un processo che vuole richiedere l'accesso alla sezione critica deve dunque acquisire la disponibilità della variabile semaforo. 
+PSEUDO-CODICE:
+
+init(S, 1);
+
+Processo 1    
+
+do
+{
+  P(S);
+     
+  sezione critica;
+     
+  V(S);
+     
+  sezione non critica;
+     
+} while(TRUE);
+
+Processo 2
+
+do
+{
+  P(S);
+     
+  sezione critica;
+     
+  V(S);
+     
+  sezione non critica;
+     
+} while(TRUE);
+
+Il problema della precedenza si ha quando dati due processi P1 e P2 che eseguono rispettivamente S1 ed S2. Si vuole che l'istruzione S2 venga eseguita solo dopo che S1 sia terminata. Presupponendo che la variabile S sia già stata acquisita dal processo P1, risolviamo il problema in maniera seguente:
+
+P1:
+
+... 
+S1;
+V(S);
+...
+
+P2:
+
+...
+P(S);
+S2;
+...
+
+Il semaforo contatore invece viene utilizzato quando si ha un accesso limitato ad un'area di memoria condivisa, ad esempio un file. Dunque un processo che accede a questa risorsa va a decrementare il valore del semaforo. Viceversa un processo che libera la risorsa incrementa il valore del semaforo. Se ad esempio un processo richiede l'accesso al semaforo ma il valore è 0, allora quest'ultimo rimane sospeso al semaforo. 
+
+

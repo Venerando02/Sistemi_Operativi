@@ -1,0 +1,44 @@
+Descrivere in modo dettagliato il principio di funzionamento dei segnali nei Sistemi Operativi e, facendo
+riferimento a Linux si parli delle informazioni memorizzate nel PCB finalizzate alla gestione dei segnali. Si
+parli anche dei limiti dei segnali, sempre facendo riferimento a Linux.
+
+Il SO durante la gestione dei processi si ritrova a gestire una serie di eventi inaspettati, definiti come 'eventi asincroni'. In generale distinguiamo diverse tipologie di eventi:
+
+1) Errori Run-Time, dovuti ad un accesso ad un indirizzo di memoria proibito o ad esempio la divisione per 0.
+2) La terminazione di un processo figlio. 
+3) La generazione di comandi da shell da parte dell'utente, come ad esempio il comando CTRL+C.
+
+Ai fini della gestione degli eventi asincroni il Sistema Operativo va ad utilizzare il meccanismo dei segnali. In generale i segnali sono di totale gestione da parte del kernel.
+Questi possono essere generati per svariati motivi, quali:
+
+1) Un evento asincrono che porta il Kernel alla generazione del segnale. Esistono diverse tipologie di segnale per ciascun tipo di evento.
+2) Possono essere generati da un utente, generando da terminale comandi da tastiera come CTRL+C.
+3) Un processo può inoltre richiedere al SO l'invio di un segnale al fine di potersi sincronizzare con un altro processo.
+
+Il ciclo di vita dei segnali è dunque il seguente:
+
+1) Un evento 'asincrono' porta il kernel alla generazione di un segnale.
+2) Il segnale, detto anche pendente, verrà accodato al processo destinatario.
+3) Il segnale viene consegnato al processo destinatario.
+
+Il Kernel si occupa infatti di consegnare il segnale al processo destinatario aggiornando il relativo campo nel PCB del processo destinatario. Sappiamo infatti che nel PCB di ciascun processo vi è una zona che memorizza un elenco di segnali pendenti per le diverse tipologie di eventi. 
+Il segnale pendente verrà quindi consegnato al processo quando è in esecuzione, durante l'esecuzione, oppure quando è in stato di pronto e viene schedulato e messo in esecuzione.
+Il processo a seconda del tipo di segnale può adottare uno dei quattro comportamenti di default:
+
+1) Può ignorare il segnale. Ciò non valido per tutti i tipi di segnali.
+2) Può terminare. In questo caso parliamo di terminazione anomala del processo.
+3) Termina generando un core dump file, che visualizza l'intero stato del processo.
+4) Viene messo in stato di STOP, che può essere sbloccato solo dalla ricezione di un altro segnale. Precisamente parliamo dei segnali SIGSTOP e SIGCONT. 
+
+Un processo può inoltre impostare un comportamento definito alla ricezione di un segnale. Il processo può dunque:
+
+1) Ignorare il segnale. Ma ciò non vale per tutti i tipi di segnale.
+2) Avere un comportamento di default.
+3) Può definire una funzione di SIGNAL HANDLER. Il SO infatti, non appena riceve il segnale, forza il processo ad eseguire la porzione di codice definita nella SIGNAL HANDLER.
+
+L'utilizzo dei segnali presenta essenzialmente due limiti fondamentali:
+
+1) I segnali possono essere usati dai processi per sincronizzarsi fra loro. D'altro canto essi non trasportano alcuna informazione. Per cui sono necessari altri meccanismi di sincronizzazione per far scambiare dati ai processi. Parliamo dunque di shared memory e socket.
+
+2) La memoria 'Pending' dei segnali è dunque limitata. Nei sistemi UNIX/LINUX è possibile memorizzare un solo segnale pendente per ciascuna tipologia di evento. Esiste la cosiddetta 'PENDING SIGNAL BITMAP' che è un vettore binario lungo 64, tale che se per la tipologia X di evento vi è il bit impostato ad 1 allora è stato memorizzato il segnale pendente per quella tipologia di evento. Quindi se inviamo più segnali pending per la stessa tipologia di evento, vi è dunque la possibilità che alcuni di essi possano andare persi.
+

@@ -1,0 +1,103 @@
+/*
+Sviluppare due programmi, uno produttore e l’altro consumatore, che utilizzano un’area di memoria condivisa.
+Si supponga che tale area di memoria sia costituita da un vettore di caratteri, di dimensione scelta a piacere
+dallo studente. Il processo produttore assegna dei valori casuali alle variabili char del vettore, generando numeri
+casuali interi compresi tra 97 e 122 (corrispondono ai caratteri minuscoli dalla ‘a’ alla ‘z’). Il processo
+consumatore legge i valori scritti dal produttore (codice ASCII di ogni carattere), calcola il numero di volte che
+è presente il codice ASCII 100 (corrisponde al carattere ‘d’) e stampa a video il risultato ottenuto. Si supponga
+che i due processi terminino quando il processo produttore assegna il carattere ‘*’ al primo elemento del vettore.
+È richiesto che l’area di memoria condivisa sia realizzata da un vettore; implementazioni diverse da un
+semplice vettore (ad esempio uno struct contenente un vett%ore) verranno considerate un errore e il voto
+attribuito al quesito sarà 0, anche nel caso in cui risoluzione del quesito sia corretta.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include "semafori.h"
+
+#define CHIAVE_PRODUTTORE (key_t)1234
+#define CHIAVE_CONSUMATORE (key_t)5678
+#define CHIAVE_MEMORIA_CONDIVISA (key_t)9012
+#define DIM 20
+
+int main(void)
+{
+  int WriterID, ReaderID, ShmID, Running = 1, i, cont;
+  void* ShmP;
+  char* P;
+  
+  printf("Processo 'consumatore' con PID = %d.\n", getpid());
+  
+  WriterID = semget(CHIAVE_PRODUTTORE, 1, IPC_CREAT | 0666);
+  if(WriterID == -1)
+  {
+    fprintf(stderr, "Impossibile creare il semaforo.\n");
+    exit(EXIT_FAILURE);
+  }
+  ReaderID = semget(CHIAVE_CONSUMATORE, 1, IPC_CREAT | 0666);
+  if(ReaderID == -1)
+  {
+    fprintf(stderr, "Impossibile creare il semaforo.\n");
+    exit(EXIT_FAILURE);
+  }
+  if(SEM_SET(ReaderID, 0) == -1) exit(EXIT_FAILURE);
+  if(SEM_SET(WriterID, 1) == -1) exit(EXIT_FAILURE);
+  
+  printf("Semafori settati con successo.\n");
+  
+  ShmID = shmget(CHIAVE_MEMORIA_CONDIVISA, sizeof(char)*DIM, IPC_CREAT | 0666);
+  if(ShmID == -1)
+  {
+    fprintf(stderr, "Impossibile creare la memoria condivisa.\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  if((ShmP = shmat(ShmID, NULL, 0)) == (void*)-1)
+  {
+    fprintf(stderr, "Impossibile agganciare la memoria condivisa.\n");
+    exit(EXIT_FAILURE);
+  }
+  P = (char*)ShmP;
+  
+  while(Running)
+  {
+    if(SEM_P(ReaderID) == -1) exit(EXIT_FAILURE);
+    if(P[0] == '*') Running = 0;
+    else
+    {
+      cont = 0;
+      for(i = 0; i < DIM; i++)
+      {
+        printf("v[%d] = %c \n", i, P[i]);
+        if(P[i] == 'd') cont++;
+      }
+      printf("------------\n");
+      printf("Il numero di volte che si presenta il carattere 'd' e' %d.\n", cont);
+    }
+    if(SEM_V(WriterID) == -1) exit(EXIT_FAILURE);
+  }
+  
+  if(SEM_DEL(WriterID) == -1) exit(EXIT_FAILURE);
+  if(SEM_DEL(ReaderID) == -1) exit(EXIT_FAILURE);
+  printf("Semafori eliminati correttamente.\n");
+  
+  if(shmdt(ShmP) == -1)
+  {
+    fprintf(stderr, "Impossibile sganciare la memoria condivisa.\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  if(shmctl(ShmID, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Impossibile eliminare la memoria condivisa.\n");
+    exit(EXIT_FAILURE);    
+  }
+  
+  printf("Posso quindi concludere.\n");
+  exit(EXIT_SUCCESS);
+}
