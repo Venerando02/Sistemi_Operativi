@@ -1,0 +1,42 @@
+Illustrare la differenza tra processi e threads. Illustrare come sia possibile la comunicazione tra processi e tra threads. Illustrare tutte le tecniche di comunicazione tra processi studiati in ambiente Linux.
+
+Un processo è dunque l'esecuzione materiale di un programma sotto controllo del sistema operativo. Un threads invece è l'unità di base d'uso della CPU, dunque una unità di esecuzione a sè stante all'interno dello stesso processo. I processi dunque presentano i seguenti limiti:
+
+- I processi hanno il limite di non poter scambiare dati fra loro. Per lo scambio dei dati è dunque necessaria l'implementazione di Shared Memory e Socket da parte del SO, poichè i segnali non trasportano dati.
+- La gestione concorrente dei processi, comporta un incremento del numero di Context Switch (Cambi di contesto) nella gestione dei processi.
+- La creazione di più processi figli comporta un incremento consistente della memoria e un aumento dei tempi di creazione dei processi.
+
+La soluzione a questa serie di problematiche è legata all'utilizzo dei thread. In generale:
+
+- Un thread viene allocato all'interno di un unico spazio di indirizzamento.
+- Tracce multiple di esecuzione vengono eseguite all'interno di un unico spazio di indirizzamento.
+- Un thread viene creato con un quantitativo di risorse e con dei tempi nettamente inferiori a quelli dei processi figli.
+- I thread hanno dunque la possibilità di poter condividere dei dati come variabili statiche ma anche la possibilità di dichiarare variabili locali private.
+
+Di default un processo che è caratterizzato da un solo thread viene anche detto 'Heavyweight Process', ossia Processo Pesante. Un processo che invece presenta più thread riesce a svolgere le attività in maniera parallela e concorrente. I thread di uno stesso processo condividono:
+
+- PID.
+- Copia dei segnali pendenti.
+- sezione dati, dunque variabili statiche.
+- Informazioni di I/O, ad esempio file aperti.
+
+Ciascun thread invece dispone di privato:
+
+- TID.
+- Copia dei registri della CPU, incluso il program counter.
+- Stack privato. Dunque la possibilità di dichiarare variabili locali private.
+
+Dunque la comunicazione fra i thread avviene in maniera efficiente. Per quanto riguarda i thread andiamo a parlare di threading sincrono che permette dunque ad un thread di creare un altro thread. Il thread creante dunque si sincronizza con la terminazione del thread creato mediante la System Calls pthread_join(). In questo modo il creante acquisisce dunque il risultato calcolato dal thread che ha creato. 
+Differente invece è la comunicazione fra i processi. I processi fra loro hanno la possibilità di scambiarsi dei segnali per la sincronizzazione fra essi. D'altro canto, lo scambio di segnali fra i processi non trasporta alcun dato. Dunque se consideriamo lo scambio dei dati fra processi, il SO implementa due meccanismi:
+
+- Shared Memory.
+- Socket.
+
+Nel primo caso, sappiamo che il SO impone il limite ai processi di non poter accedere ad indirizzi che stanno al di fuori del proprio. Dunque, su richiesta di un processo, il SO può andare a creare un'area di memoria che permetta lo scambio di dati fra i processi e che permetta loro di comunicare in maniera libera. Ovviamente questa zona di memoria si trova al di fuori dello spazio degli indirizzi del processo. Il Sistema Operativo inoltre ha il compito di consentire l'accesso a questa zona di memoria a qualunque processo ne faccia richiesta. Il Sistema Operativo rende visibile a tutti processi quest'area di memoria e dunque, a qualunque processo faccia richiesta, 'aggancia' lo spazio degli indirizzi della memoria condivisa nello spazio degli indirizzi del processo che ne ha fatto richiesta. Definiamo questa operazione come 'attachment'. I processi che non fanno più uso della shared memory devono richiedere lo sgancio dalla memoria. Solitamente il processo che ha fatto richiesta di creazione è colui che si occupa dell'eliminazione.
+
+La Socket è una risorsa a disposizione del sistema Operativo caratterizzata da due campi:
+
+- Indirizzo IP, che identifica il PC sul quale gira il processo.
+- Numero di porta, che è un indirizzo locale di smistamento delle richieste.
+
+In generale la socket è una risorsa di comunicazione del SO che si pone agli estremi di un canale di comunicazione tra Client e Server. Il canale di comunicazione può essere: una reale connessione ad internet oppure una comunicazione locale fra processi appartenenti allo stesso PC. La socket dunque permette la comunicazione locale fra processi (Stesso PC) e la comunicazione fra processi appartenenti a PC diversi (mediante connessione ad internet). I protocolli che vengono utilizzati sono TCP/IP oppure UDP/IP. Il primo indica una trasmissione ordinata dei dati il secondo viceversa.

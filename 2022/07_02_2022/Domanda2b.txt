@@ -1,0 +1,128 @@
+Descrivere il problema della sincronizzazione e la soluzione basata su semafori e lock mutex. Descrivere come la libreria System V implementa i semafori.
+
+La necessità da parte dei processi di sincronizzarsi fra loro nasce al fine che essi possano cooperare, dunque scambiarsi dei dati, in maniera efficiente. A questo proposito il Sistema Operativo utilizza i meccanismi dei semafori lock mutex. I due problemi fondamentali della sincronizzazione sono: 
+
+1) Problema della condivisione. 
+2) Problema della precedenza.
+
+Il primo nasce poichè quando si hanno più processi che accedono in modo parallelo e concorrente ad una risorsa condivisa, a seconda dell'ordine con cui essi eseguono le operazioni possono provocare inconsistenza nei dati. La soluzione a questa problematica è dunque la creazione di una sezione critica, ossia una porzione di codice definita 'atomica' in quanto un processo che desidera accedere alla regione critica deve prima aspettare che un altro processo, il quale aveva fatto accesso precedentemente, esca e termini le proprie operazioni.
+
+Il problema della precedenza nasce quando ad esempio si hanno due processi P1 e P2. Il primo esegue l'istruzione S1 e il secondo esegue l'istruzione S2. Si desidera dunque che S2 venga eseguita solo dopo che S1 è terminata. La soluzione sta nell'implementare un meccanismo 'bloccante' che blocchi P2 fino a quando S1 non viene eseguita e dunque lo sblocchi solo dopo che S1 termina. 
+Fa parte dei problemi di precedenza anche quello del produttore - consumatore classico, in cui il consumatore legge il dato solo dopo che il produttore scrive il dato e viceversa.
+
+Per questa serie di problematiche dunque, il SO mette a disposizione due meccanismi: semafori e lock mutex. Il Lock mutex (MUTUAL EXCLUSION) è una variabile di Sistema binaria che viene gestita appunto dal kernel. Ciascun processo può richiedere al kernel di acquisire il lock mutex, quindi richiamare la funzione acquire(), oppure di rilasciare la variabile condivisa, quindi richiamare la funzione release(). L'atomicità delle operazioni sui dati è garantita dal kernel che funge da giudice nell'acquisizione o rilascio della variabile lock mutex. 
+Condideriamo dunque la risoluzione dei due problemi di sincronizzazione con i lock mutex. 
+La gestione della sezione critica è la seguente:
+
+Processo/Thread I:
+                                                                                                  
+do                       
+{
+  acquire(L);
+  
+  sezione critica;
+  
+  release(L);
+  
+  sezione non critica;
+} while(TRUE);
+
+Processo/Thread II:
+
+do
+{
+  acquire(L);
+  
+  sezione critica;
+  
+  release(L);
+  
+  sezione non critica;
+} while(TRUE);
+
+I processi che vogliono dunque accedere alla sezione critica devono acquisire la disponibilità del lock mutex richiamando la acquire(), se la variabile L non è disponibile allora il processo rimane in uno stato di busy wait (attesa attiva).
+
+Risolvoamo il problema di precedenza, mediante i lock mutex, nel seguente modo. Supponendo che il lock mutex sia già stato acquisito, abbiamo il seguente pseudo-codice:
+
+P1:
+
+....
+S1;
+release(L);
+....
+
+P2:
+
+...
+acquire(L);
+S2;
+...
+
+Così facendo, non appena l'istruzione S1 termina, viene rilasciato il lock mutex che viene acquisito dal processo P2, che richiamerà per l'appunto la funzione acquire.
+
+La variabile semaforo è stata introdotta da Dijkstra nel 1965. Possiamo dunque definirla come una variabile condivisa intera > 0.
+Ciascun processo può richiedere al kernel di effettuare operazioni di incremento oppure decremento sul semaforo. Se un generico processo chiede al kernel di andare a decrementare il semaforo, ma il suo valore è impostato a 0, allora il processo rimarrà in attesa poichè il semaforo non può assumere valori negativi. Le principali operazioni che possono essere effettuate con i semafori sono le seguenti:
+
+- init(S, K). Inizializzazione del semaforo S al valore K.
+- P(S). Operazione di decremento il semaforo.
+- V(S). Operazione di incremento sul semaforo.
+
+Grazie ai semafori binari, che possono dunque assumere valori 0 o 1, possiamo risolvere i due problemi fondamentali della sincronizzazione. La gestione della regione critica è la seguente:
+
+init(S, 1);
+
+Processo/Thread I:
+                                                                                                  
+do                       
+{
+  P(S);
+  
+  sezione critica;
+  
+  V(S);
+  
+  sezione non critica;
+} while(TRUE);
+
+Processo/Thread II:
+
+do
+{
+  P(S);
+  
+  sezione critica;
+  
+  V(S);
+  
+  sezione non critica;
+} while(TRUE);
+
+Consideriamo inoltre, il problema classico della precedenza, con l'ipotesi che il semaforo sia già stato acquisito, lo pseudo-codice risulterà il seguente:
+
+P1:
+
+init(S, 0);
+....
+....
+S1;
+V(S);
+....
+
+P2:
+
+...
+...
+P(S);
+S2;
+...
+
+La libreria System V definisce il tipo semaforo come un array di semafori. Dunque andare a definire UN solo semaforo consiste nella definizione di un ARRAY MONODIMENSIONALE. System V di base è molto potente in quanto permette la condivisione dei semafori sia per processi imparentati che per processi indipendenti. 
+A ciascun semaforo viene associato un 'SEMAPHORE IDENTIFIER', un valore intero non negativo, che lo identifica. Questo ID non viene definito in fase di programmazione, bensì cambia da esecuzione ad esecuzione, ed è inoltre definito dal Kernel del SO.
+Dal punto di vista pratico, un processo per creare un semaforo va a richiamare la funzione semget(). In essa va a digitare una chiave, definita come tipo opaco (key_t). Dunque, se non è già stato associato un semaforo per quella chiave, il kernel alloca il semaforo e ne associa un ID alla key. Al fine di utilizzare lo stesso semaforo, basta che i processi vadano a definire la stessa key in fase di programmazione. Le successive API o System Calls di System V andranno ad utilizzare il SEMAPHORE ID.
+Le operazioni sui semafori sono le seguenti:
+
+- int semop(int sem_id, struct sembuf* sem_ops, size_t num_sem_ops), con essa vado a definire le operazioni (incremento/decremento) su ciascun semaforo.
+
+- int semctl(int sem_id, int sem_num, int command, ...), con la seguente vado a definire operazioni particolari sul semaforo, dunque l'operazione di eliminazione o il setting del semaforo ad un determinato valore.
+
+

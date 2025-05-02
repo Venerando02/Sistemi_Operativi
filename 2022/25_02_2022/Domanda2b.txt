@@ -1,0 +1,32 @@
+Illustrare il concetto di processo, con riferimento agli stati che attraversa. Discutere in modo dettagliato le strutture dati che il kernel utilizza per gestire i processi.
+
+Per definizione, un processo è l'esecuzione materiale del programma sotto il controllo del sistema operativo. Il sistema operativo si occupa dunque dell'allocazione degli algoritmi e strutture dati necessarie all'esecuzione dello stesso. 
+Il Sistema operativo dunque gestisce per intero tutto il ciclo di vita del processo, dalla sua creazione fino alla sua terminazione. Ciascun processo assume una serie di stati nel corso della sua esecuzione:
+
+1) Nuovo (New), significa che il processo è stato creato e caricato in memoria.
+2) Esecuzione (Running), il processo ha ricevuto dunque la risorsa processore.
+3) Pronto (Ready), il processo è logicamente pronto ad essere eseguito, in attesa della risorsa processore.
+4) Attesa (Wait), il processo viene sospeso poichè in attesa di un evento: la ricezione di un segnale, oppure una eventuale iterazione di I/O.
+5) Terminazione (Terminating), il processo è terminato e tutte le sue risorse sono state liberate. 
+
+Alla creazione di ciascun processo, è dunque associata la creazione di una struttura dati caratterizzata da:
+
+1) Sezione codice: contiene per intero il codice del programma.
+2) Sezione dati: contiene le variabili statiche.
+3) Stack: contiene dunque parametri formali, valori di ritorno e variabili locali del processo.
+4) Heap: contiene tutto ciò che riguarda l'allocazione dinamica.
+
+Due processi che hanno in comune lo stesso codice condivideranno dunque la stessa sezione codice, ma avranno stack, heap e sezione dati indipendenti fra loro. 
+Il kernel gestisce per intero i processi avvalendosi di una struttura dati chiamata PCB (Process Control Block), in essa sono contenute tutte le informazioni del processo, dunque:
+
+1) PID del processo, ovvero l'identificativo dello stesso.
+2) Stato del processo. Dunque se esso si trova in stato di wait, running ecc.
+3) Copia dei registri della CPU. In particolare:
+- Puntatore all'istruzione successiva del processo, ovvero il Program Counter.
+- Puntatore all'area Stack, il cosiddetto stack pointer.
+4) Informazioni di I/O, dunque descrittori di file.
+5) Elenco di segnali pendenti del processo.
+6) Valori di ritorno del processo. Dunque i valori ritornati da exit() o return() nel main.
+7) Informazioni di accounting del processo. 
+
+Per la gestione dei processi si vanno ad utilizzare delle liste. Lista dei processi in stato di pronto e di attesa. La prima contiene i PCB dei processi in stato di pronto, si possono avere più liste di questo tipo. La seconda contiene i PCB dei processi in stato di attesa. Esistono diverse liste di processi in stato di attesa, a seconda del tipo di evento o del tipo di dispositivo di I/O. Facendo dunque riferimento a LINUX, esso mantiene la cosiddetta PROCESS TABLE, ossia una tabella che contiene tutti i PCB dei processi. Se un processo termina, viene dunque rimosso da questa tabella, si aspetta se invece il processo in questione è di tipo ZOMBIE.

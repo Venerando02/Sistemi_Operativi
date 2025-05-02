@@ -1,0 +1,70 @@
+Descrivere gli algoritmi di schedulazione con e senza preemption trattati a lezione, e l’algoritmo di schedulazione CFS di Linux.
+
+
+In generale, il compito dello scheduler a breve termine è quello di selezionare il processo da eseguire all'interno della lista di processi in stato di PRONTO.
+Esistono essenzialmente due tipologie di scheduler:
+
+1) Scheduler Preemptive, con prelazione, che può quindi prelazionare la CPU ai processi. 
+2) Scheduler Not Preemptive, senza prelazione, ossia che non può di sua sponte prelazionare la CPU ai processi.
+
+Per ciascuna tipologia di Scheduler abbiamo diversi algoritmi di SCHEDULING:
+
+1) Scheduler Preemptive -> RR (Round Robin), SRTF (Shortest Remaining Time First).
+2) Scheduler Not Preemptive -> FCFS (First Come First Server), SJF (Shortest Job First), PS (Priority scheduling).
+
+Cominciamo dagli algoritmi di scheduling Not Preemptive. Sappiamo che, in questo caso, lo scheduler non può prelazionare la CPU a meno che il processo sospenda la sua esecuzione o termini.
+In generale quindi lo scheduler deve prendere una decisione su quale processo assegnare la CPU quando un processo passa:
+
+- Da Stato di esecuzione a stato di Attesa.
+- Termina.
+
+Il primo algoritmo NOT PREEMPTIVE che consideriamo è il FCFS. Quest'ultimo è il più semplice da comprendere in quanto assegna la CPU ai processi nell'ordine entro cui essi richiedono la CPU. La gestione dei processi è quindi basata su una CODA FIFO:
+
+1) Viene quindi assegnata la CPU ai processi estratti dalla testa della coda.
+2) Un processo con lo status READY viene quindi inserito nella coda.
+
+Il vantaggio legato a questo algoritmo è che è molto facile da comprendere e facile da implementare. Lo svantaggio è legato ai tempi medi di attesa variabili in base all'ordine entro la quale i processi vengono inseriti nella coda FIFO. Potrebbe capitare quindi che processi I/O Bound che hanno una durata di esecuzione piccola, rimangono in coda poichè vengono prima eseguiti processi CPU Bound che hanno una durata di esecuzione molto alta.
+
+Il secondo algoritmo NOT PREEMPTIVE che analizziamo è lo SJF. Quest'ultimo si pone l'obbiettivo di risolvere la problematica del FCFS, assegnando quindi a ciascun processo una durata. In realtà si tratta quindi di una stima della durata successiva (NEXT CPU BURST) che viene effettuata sulla base delle ultime esecuzioni del processo in questione. 
+Lo scheduling secondo questo tipo di algoritmo si basa sullo scegliere il processo che ha un BURST TIME inferiore. Nel caso in cui i processi in lista abbiano la stessa durata allora si procede con il FCFS.
+Il vantaggio fondamentale di questo algoritmo è che quindi viene minimizzato il tempo medio di attesa. Lo svantaggio è appunto legato al fatto che risulta impossibile stabilire con certezza la durata della successiva esecuzione del processo. Non si può dunque prevedere con certezza il comportamento futuro del processo.
+
+Il terzo ed ultimo algoritmo NOT PREEMPTIVE è il PS. Quest'ultimo schedula i processi secondo dei valori di priorità. In sostanza vengono schedulati i processi che hanno un valore di priorità maggiore. Per coloro i quali invece hanno egual valore di priorità si procede sempre con l'algoritmo FCFS.
+La priorità è essenzialmente un valore intero non negativo che viene scelto in modo dinamico. Non esiste un modo comune di assegnazione della priorità. LINUX ad esempio assegna valori interi piccoli a priorità maggiori. La priorità viene dunque assegnata o sulla base di cause interne, come tempi di attesa e durate di esecuzione, oppure cause esterne e quindi importanza del processo o dovuti al proprietario del processo. 
+Lo svantaggio di questo algoritmo è legato alla starvation dei processi. Si possono avere dunque tempi di attesa indefiniti da parte dei processi che hanno basse priorità. Una possibile soluzione è l'aging dei processi, per cui la priorità aumenta con il passare del tempo.
+
+Gli algoritmi PREEMPTIVE sono caratterizzati dalla possibilità dello scheduler di prelazionare la CPU quando un processo passa:
+
+1) Da stato di esecuzione ad attesa.
+2) Da stato di esecuzione a pronto.
+3) Da attesa a pronto.
+4) Termina.
+
+In ciascuno dei seguenti casi lo scheduler decide la riassegnazione della CPU.
+Il primo algoritmo che analizziamo è il RR (Round Robin). Questo è una forma di FCFS con prelazione della CPU. E' quindi fondamentale la definizione del tempo di quanto (Time Quantum). Quindi non appena il processo finisce il suo tempo di quanto possono verificarsi 2 scenari:
+
+1) Il processo finisce entro il tempo di quanto. In tal caso viene prelazionata la CPU e viene riassegnata al processo successivo nella testa.
+
+2) Il processo non finisce entro il tempo di quanto. In questo caso viene quindi lanciato un interrupt appena scade il timer, il processo viene quindi rimesso in coda e viene riassegnata la CPU al processo nella testa della coda dei processi in stato di pronto.
+
+Il tempo di quanto influenza quindi il numero di Context Switch (Cambi di contesto) che si hanno ai fini del completamento del processo. Lo svantaggio quindi è legato alla scelta del tempo di quanto perchè:
+
+1) Tempo di quanto lungo fa sì che l'algoritmo diventi un FCFS.
+2) Tempo di quanto corto aumenta i tempi di commutazione/gestione dei processi.
+
+Il secondo algoritmo PREEMPTIVE è il SRTF (Shortest Remaining Time First). Quest'ultimo è una forma di SJF con prelazione. Quindi schedula i processi per brevità di durata. Il punto fondamentale sta nel fatto che se viene sottomesso un processo che ha burst time (durata di esecuzione) minore del processo che viene eseguito allora viene prelazionata la CPU.
+L'algoritmo di schedulazione CFS di LINUX viene introdotto a partire dalla versione 2.6.23. Si tratta di un algoritmo che è di tipo:
+
+1) Preemptive sulla base di un particolare quanto di tempo.
+2) Effettua la schedulazione sulla base di un valore particolare di priorità.
+
+Nello specifico, all'algoritmo CFS (Completely Fair Scheduler) è assegnata la schedulazione dei processi utente. Lo scheduler assegna a ciascun processo un valore di NI (Nice Value), il cui range è [-20; +19] e il PRI, che corrisponde alla priorità del processo con un range di tipo [0; +39]. Ovviamente sapendo che lo user-space priority range va da [100; 139]. 
+La relazione che lega NI e PRI è del tipo NI = PRI - 20. Di default CFS assegna ai processi un valore di NI = 0, quindi un PRI = 20 ed una priorità pari a 120. 
+CFS è un algoritmo PREEMPTIVE basato su un particolare quanto di tempo. Viene mantenuta una variabile TL (Target Latency) che indica un intervallo di tempo tale che ciascun task in stato di PRONTO deve essere eseguito almeno una volta nell'ambito di questo intervallo.
+L'assegnazione del tempo di utilizzo della CPU dipende dunque dal valore di NI e da TL. Ciascun valore di NI ha un determinato wi (weight value). Più è basso il NI maggiore sarà il peso assunto dal processo. Dunque, sia TL la latenza obbiettivo, dato un valore specifico di NI a cui è associato un wi. Possiamo dedurre che il tempo di utilizzo della CPU per quel specifico task è dato dalla formula:
+                                    (TL * wi) / (somma di tutti i task in stato di pronto)
+                                    
+CFS effettua la schedulazione dei processi sulla base della priorità, viene mantenuta una variabile vruntime, che indica il tempo virtuale di esecuzione di un processo fino al momento del task. Quando essa corrisponde al tempo effettivo di esecuzione, allora si ha un valore di NI = 0. Valori di vruntime minori dell'effettivo tempo di esecuzione avranno NI piccoli (PRIORITA' ALTA) viceversa valori più grandi avranno NI grandi (PRIORITA' BASSA).
+La selezione dei task in stato di pronto nel CFS è legata ad un ABR (Albero Binario di Ricerca) Bilanciato. Dunque ciascun task pronto verrà inserito come nodo nell'ABR. Dunque, appena scade il timer, si selezionerà il task che si trova più a sinistra dell'albero, in questo senso si mantiene una variabile rb_leftmost che riduce i tempi di ricerca e selezione dell'elemento poichè memorizza la posizione dell'elemento più a sinistra dell'albero. Tempo di accesso (O(logN)). 
+Non si andrà mai incrontro al problema della starvation, in quanto i task a destra dell'albero non verranno eseguiti per molto tempo, ma avranno comunque un vruntime più piccolo dei task che vengono inseriti successivamente, si avrà uno spostamento dei task da destra a sinistra.
+

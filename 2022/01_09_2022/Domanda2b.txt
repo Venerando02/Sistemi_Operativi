@@ -1,0 +1,65 @@
+Descrivere in modo dettagliato le possibili strutture di un SO, confrontandole tra loro allo scopo di
+evidenziare chiaramente vantaggi e svantaggi di ogni soluzione. Descrivere la struttura corrente di Linux.
+
+La progettazione di un sistema operativo è molto complessa in quanto va ad impattare su una serie di concetti fondamentali: implementazione, aggiornamento, manutenzione e efficienza. Di base, esistono 4 strutture sulla quale si basa un sistema operativo:
+
+- Struttura Monolitica.
+- Struttura Stratificata.
+- Microkernel.
+- Moduli Kernel.
+
+Gli odierni sistemi operativi sono dunque basati su soluzioni ibride di queste strutture, al fine di potenziarne dunque le prestazioni, la sicurezza e l'usabilità.
+Analizziamo dunque ciascuna di queste strutture:
+
+La struttura monolitica nasce dall'idea di avere pochi processi che svolgono molte funzioni. L'idea di base è quella dunque di avere un unico programma con poche funzioni che via via venivano incrementate.
+I primi sistemi operativi sono dunque basati su questo tipo di struttura, si fa riferimento a UNIX o Windows XP.
+Il vantaggio fondamentale è legato alla buona efficienza che si ha nell'esecuzione delle System Call. In quanto esse vengono eseguite all'interno di un unico spazio di indirizzamento.
+Lo svantaggio è legato alla difficoltà di manuntenzione e aggiornamento. Appartenendo dunque ad un unico programma, alla semplice modifica di una funzione o aggiunta della medesima, si ha la necessità di ricompilare l'intero programma.
+
+La struttura stratificata è caratterizzata da moduli comunicanti fra di loro. In generale la divisione in strati del SO si ha secondo un approccio top-down, si ha dunque l'individuazione delle principali caratteristiche e funzionalità del sistema che vengono dunque divisi in componenti. 
+In generale ciascuno strato o modulo offre dei servizi agli strati superiori ed usa i servizi offerti dagli strati inferiori.
+I due vantaggi fondamentali sono la facilità di debbugging ed inoltre la facilità di aggiornamento purchè vengano mantenute le stesse interfacce con i livelli superiori.
+I due svantaggi che portano dunque alla non utilizzabilità del modello sono legati alla difficoltà che si ha nella progettazione ed inoltre alla scarsa efficienza nell'esecuzione delle System Call. Il primo è dovuto al fatto che ciascun livello sfrutta i servizi dei livelli sottostanti e deve al contempo offrirli ai livelli superiori. Il secondo invece poichè l'esecuzione di una System Call potrebbe comportare un attraversamento di livelli e il richiamo di altre system call annidate.
+
+La struttura a Microkernel nasce dal problema legato alla gestione del kernel.
+Dunque vengono rimosse alcune funzionalità al kernel che vengono definiti come programmi client e che vengono eseguiti in modalità utente. Il kernel invece presenta le principali funzionalità, ovvero scheduling della CPU e gestione della comunicazione tra processi client e processi kernel. 
+I vantaggi sono dunque molteplici. In primo luogo viene concessa maggiore semplicità nell'aggiornamento del Sistema Operativo, basta dunque aggiungere i servizi in modalità client. Il kernel in questo senso è molto semplice e facile da aggiornare. Viene favorita la portabilità su una qualunque architettura in quanto sono pochi i moduli che richiedono l'accesso alle risorse hardware. Inoltre un eventuale malfunzionemnto di un processo utente non creerebbe problemi al kernel che invece continuerebbe la propria esecuzione.
+Lo svantaggio principale è che si avranno dei tempi di esecuzione molto lunghi dovuti al fatto che la maggior parte dei servizi, anche molto importanti, vengono eseguiti in modalità client, vi sarà dunque un sovraccarico.
+
+Il modello a moduli da al kernel i servizi principali. 
+Tutti gli altri servizi vengono implementati come moduli caricabili o scaricabili dinamicamente dal kernel dopo la fase di avvio. Si ha dunque la possibilità di caricare più moduli contemporaneamente. 
+Il modello a moduli presenta una serie di vantaggi fondamentali:
+- Il kernel non ha necessità di essere ricompilato dopo il caricamento o scaricamento di un modulo.
+- Viene superato il limite del modello stratificato. Ciascun modulo usa in maniera efficiente i servizi offerti dagli altri moduli.
+- Viene superato il limite del modello microkernel. Ciacun modulo comunica con gli altri in maniera efficiente.
+ 
+Il Sistema Operativo LINUX è dunque basato su di una struttura ibrida: Monolitica + Modulare.
+In generale è caratterizzato da tre porzioni di codice:
+
+- Kernel Monolitico, con moduli caricabili dinamicamente.
+- Librerie di sistema.
+- Utilità di sistema e utente.
+
+In generale il Kernel è l'unico blocco monolitico scritto in binario, le cui strutture dati e algoritmi sono collocati all'interno di un unico spazio di indirizzamento. In generale esse contengono informazioni sullo: Scheduling della CPU, Gestione della memoria, File System, Driver Dispositivi e comunicazione.
+Questo tipo di kernel presenta vantaggi sull'esecuzione delle System Calls, in quanto vengono dunque eseguite nello stesso spazio di indirizzamento. Inoltre ciascun sottosistema del kernel comunica in maniera veloce ed efficiente. 
+I moduli del kernel permettono dunque di avviarlo in maniera minimale. Essi sono caricabili e scaricabili dinamicamente. Vengono dunque eseguiti in modalità privilegiata, dunque hanno totale accesso alle risorse Hardware, e nello stesso spazio di indirizzamento del kernel. In genere i moduli sono dei file con estensione .o o .ko che sono contenuti nella directory /lib/modules/versiones che fa riferimento alla versione del kernel per il quale sono stati progettati. In generale LINUX offre un sistema di supporto all'utilizzo dei moduli, basato su 3 funzioni:
+
+- Gestione dei moduli.
+- Tabella di registrazione.
+- Gestione dei conflitti.
+
+Il sistema di gestione dei moduli permette dunque il caricamento o scaricamento da parte dei moduli. In generale, per quanto riguarda il caricamento dei moduli, avviene:
+
+- Manualmente tramite insmod.
+- Quando un processo in esecuzione richiede al kernel la presenza di un modulo e dunque quest'ultimo manda comunicazione al sistema di gestione dei moduli.
+
+Lo scaricamento avviene invece:
+
+- Manualmente tramite rmmod.
+- Periodicamente il sistema di gestione dei moduli interroga il kernel sulla presenza di moduli che sono stati caricati ma non vengono usati da molto tempo. In tal caso, se esistono vengono deallocati (scaricati).
+
+Ciascun modulo ha la necessità che le sue variabili e funzioni puntino allo stesso spazio di indirizzamento del kernel. Se così non fosse il modulo non verrebbe accettato. Viceversa viene allocata un'area di memoria contigua dal kernel, che rilascia l'indirizzo di caricamento, vengono dunque rilocate tutte le funzioni e variabili del modulo in questione che viene dunque passato al kernel. Si verifica dunque l'aggiornamento della tabella di simboli gestita dal Sistema Operativo. Quest'ultima permette dunque a ciascun modulo di usare le funzioni degli altri moduli in maniera efficiente.
+
+Al caricamento di ciascun modulo viene aggiornata la tabella dinamica di registrazione dei moduli. Essa contiene una descrizione delle principali funzionalità di ciascun modulo. 
+
+La gestione dei conflitti invece permette di rilasciare ai moduli, che fanno richiesta di accedere ad una risorsa hardware, una prenotazione. Se quest'ultima non viene accettata, dunque ad esempio la risorsa hardware non è disponibile, spetterà al modulo decidere in maniera autonoma l'azione da intraprendere.

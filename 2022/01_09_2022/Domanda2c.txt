@@ -1,0 +1,43 @@
+Descrivere in modo dettagliato il funzionamento dei segnali, facendo riferimento agli stati che attraversa un
+processo descrivendo come l’arrivo di un segnale possa modificare lo stato di un processo e quale. Illustrare
+chiaramente la gestione dei segnali in ambiente Linux facendo riferimento al PCB dei processi.
+
+Un sistema operativo si trova molto spesso a gestire una serie di eventi inaspettati nei processi. Quest'ultimi vengono definiti eventi asincroni e sono essenzialmente i seguenti:
+
+- Errori RUN-TIME, divisione per 0 oppure eventuale accesso ad un indirizzo proibito.
+- Terminazione di un processo figlio.
+- Comandi da parte dell'utente da tastiera, ad esempio CTRL + C.
+
+Il sistema operativo dunque va ad implementare il meccanismo dei segnali. Questi sono di totale gestione del kernel e possono essere generati da:
+
+- Proprio il kernel come conseguenza di un evento asincrono. Per ciascuna tipologia di evento asincrono esiste un segnale.
+- Un utente che da terminale può digitare dei comandi particolari. Esempio: CTRL + C che rappresenta SIGINT.
+- Un processo che effettua una richiesta al kernel al fine di sincronizzarsi con un altro processo.
+
+In generale, il ciclo di vita di un segnale è il seguente:
+
+- Un evento asincrono porta il kernel alla generazione di un segnale.
+- Il segnale, detto pendente, viene accodato al processo destinatario dal kernel.
+- Il segnale viene consegnato al processo destinatario.
+
+Il kernel dunque si occupa di consegnare il segnale al processo destinatario, aggiornando il relativo campo nel PCB del processo destinatario. il segnale verrà dunque consegnato quando:
+
+- Un proceso è in esecuzione, durante l'esecuzione.
+- Un processo è in stato di pronto, viene rischedulato e messo in esecuzione.
+
+Alla ricezione del segnale, un processo può avere uno dei seguenti comportamenti di default:
+
+- Ignora il segnale, non vale per SIGKILL e SIGSTOP.
+- Termina in maniera ANORMALE.
+- Termina e genera un core dump file, che visualizza l'intero stato del processo.
+- Viene messo in Stato T di STOP. Ha dunque in questo caso ricevuto il segnale SIGSTOP. Lo stato T può essere dunque sbloccato dalla ricezione di un altro segnale, ossia SIGCONT.
+
+Nonostante ciò un processo può dunque bloccare la ricezione di un segnale, in particolare se sta eseguendo un codice che non può essere interrotto. Può in seguito sbloccare la ricezione di un eventuale segnale in seguito. Ciò non può farlo per tutti i tipi di segnali.
+
+In generale, un processo può richiedere al sistema operativo che, alla ricezione di un segnale, possa essere adottato uno dei seguenti comportamenti:
+
+- Ignorare il segnale, non vale per SIGKILL e SIGSTOP.
+- Adottare un comportamento di default.
+- Definire una porzione di codice, racchiusa in un Signal Handler, dunque una funzione. Alla cui ricezione del segnale, esso viene catturato dal Sistema Operativo che forza il processo dunque ad eseguire la funzione. Il processo riprenderà dunque nel punto in cui si era interrotto. 
+
+In ambiente LINUX ciascun segnale pendente viene consegnato dal kernel nel PCB del processo destinatario. Ciascun processo presenta la PENDING SIGNAL BITMAP, ovvero un vettore binario lungo 64, tale che, dato un evento X, se il bit è impostato ad uno allora esiste il segnale pendente per quella tipologia X di evento asincrono. Linux impone il limite di un solo segnale pendente per ciascuna tipologia di evento asincrono. 

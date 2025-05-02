@@ -1,0 +1,67 @@
+Descrivere il problema della sincronizzazione noto come “Produttore-Consumatore con Buffer Limitato”.
+Si scriva uno pseudo codice che realizzi le operazioni svolte dai processi produttore e consumatore, facendo
+uso delle funzioni sui mutex/semafori.
+
+Una dei problemi più noti della sincronizzazione fra i processi è quello del Produttore-Consumatore con Buffer Limitato. Dunque, a differenza del più classico problema del produttore-consumatore con un blocco dati condiviso, nel quale ad una azione di produzione ne corrisponde una di consumazione, in questo caso il processo produttore prosegue la sua produzione non curante del fatto che il consumatore abbia effettivamente letto il blocco dati condiviso. Si arriverà al punto che si verificherà la saturazione del blocco dati. 
+Ai fini della risoluzione di questo problema si necessita della definizione di un meccanismo di sincronizzazione che blocchi il processo produttore quando il buffer di memoria è pieno e che lo sblocchi non appena il processo consumatore abbia letto almeno un elemento.
+Consideriamo dunque un esempio pratico. Si suppone di avere una coda FIFO implementata tramite un vettore di dimensione pari a SIZE. Le operazioni che vengono effettuate dai due processi produttore-consumatore sono le seguenti:
+
+1) Processo Produttore -> enqueue() -> Inserimento di un elemento nella coda.
+2) Processo Consumatore -> dequeue() -> Estrazione di un elemento dalla testa della coda.
+
+Per risolvere questo problema di sincronizzazione abbiamo dunque bisogno di due semafori contatori e di un semaforo binario o lock mutex. Chiameremo i due semafori contatori nel seguente modo:
+
+1) posti_pieni, inizializzato a 0:
+
+- Incremento ad ogni produzione.
+- Decremento ad ogni consumo.
+
+Servirà al processo consumatore per capire quanti elementi da estrarre vi sono lungo la coda.
+
+2) posti_vuoti, inizializzato a SIZE:
+
+- Incremento ad ogni consumo.
+- Decremento ad ogni produzione.
+
+Servirà al processo produttore per capire quanti posti vuoti vi sono lungo la coda.
+
+3) Chiameremo il semaforo binario o lock mutex 'mutex', ci permetterà dunque di gestire la mutua esclusione tra i due processi.
+
+PSEUDO-CODICE:
+
+init(mutex, 1);
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+
+void consumatore()
+{
+  message M;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    M = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    
+    consuma M;
+  }
+}
+
+void produttore()
+{
+  message M;
+  while(TRUE)
+  {
+    produci M;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(M);
+    
+    V(mutex);
+    V(posti_pieni); 
+  }
+}

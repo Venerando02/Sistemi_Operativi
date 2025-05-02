@@ -1,0 +1,16 @@
+Descrivere l’algoritmo di schedulazione CFS di Linux.
+
+L'algoritmo di schedulazione CFS di LINUX viene introdotto a partire dalla versione 2.6.23. Si tratta di un algoritmo che è di tipo:
+
+1) Preemptive sulla base di un particolare quanto di tempo.
+2) Effettua la schedulazione sulla base di un valore particolare di priorità.
+
+Nello specifico, all'algoritmo CFS (Completely Fair Scheduler) è assegnata la schedulazione dei processi utente. Lo scheduler assegna a ciascun processo un valore di NI (Nice Value), il cui range è [-20; +19] e il PRI, che corrisponde alla priorità del processo con un range di tipo [0; +39]. Ovviamente sapendo che lo user-space priority range va da [100; 139]. 
+La relazione che lega NI e PRI è del tipo NI = PRI - 20. Di default CFS assegna ai processi un valore di NI = 0, quindi un PRI = 20 ed una priorità pari a 120. 
+CFS è un algoritmo PREEMPTIVE basato su un particolare quanto di tempo. Viene mantenuta una variabile TL (Target Latency) che indica un intervallo di tempo tale che ciascun task in stato di PRONTO deve essere eseguito almeno una volta nell'ambito di questo intervallo.
+L'assegnazione del tempo di utilizzo della CPU dipende dunque dal valore di NI e da TL. Ciascun valore di NI ha un determinato wi (weight value). Più è basso il NI maggiore sarà il peso assunto dal processo. Dunque, sia TL la latenza obbiettivo, dato un valore specifico di NI a cui è associato un wi. Possiamo dedurre che il tempo di utilizzo della CPU per quel specifico task è dato dalla formula:
+                                    (TL * wi) / (somma di tutti i task in stato di pronto)
+                                    
+CFS effettua la schedulazione dei processi sulla base della priorità, viene mantenuta una variabile vruntime, che indica il tempo virtuale di esecuzione di un processo fino al momento del task. Quando essa corrisponde al tempo effettivo di esecuzione, allora si ha un valore di NI = 0. Valori di vruntime minori dell'effettivo tempo di esecuzione avranno NI piccoli (PRIORITA' ALTA) viceversa valori più grandi avranno NI grandi (PRIORITA' BASSA).
+La selezione dei task in stato di pronto nel CFS è legata ad un ABR (Albero Binario di Ricerca) Bilanciato. Dunque ciascun task pronto verrà inserito come nodo nell'ABR. Dunque, appena scade il timer, si selezionerà il task che si trova più a sinistra dell'albero, in questo senso si mantiene una variabile rb_leftmost che riduce i tempi di ricerca e selezione dell'elemento poichè memorizza la posizione dell'elemento più a sinistra dell'albero. Tempo di accesso (O(logN)). 
+Non si andrà mai incrontro al problema della starvation, in quanto i task a destra dell'albero non verranno eseguiti per molto tempo, ma avranno comunque un vruntime più piccolo dei task che vengono inseriti successivamente, si avrà uno spostamento dei task da destra a sinistra.

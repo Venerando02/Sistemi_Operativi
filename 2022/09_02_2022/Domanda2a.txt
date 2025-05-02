@@ -1,0 +1,59 @@
+Descrivere in modo dettagliato il funzionamento dei socket nelle Librerie POSIX, fornendo particolari dettagli su tutte le operazioni che un Server deve eseguire per attivare la comunicazione basata su socket, ossia la sequenza di API da invocare e la descrizione di ogni API invocata.
+
+Una socket è un servizio, offerto dal Sistema Operativo, che, ponendosi ai due estremi della comunicazione tra due processi client e server, stabilisce un canale di comunicazione. Quest'ultimo può essere una reale connessione ad internet, oppure una comunicazione locale (processi appartenenti allo stesso PC). In generale, la socket è un servizio caratterizzato da identificativi fondamentali:
+
+1) Indirizzo IP, che indica il PC in cui il processo è in esecuzione.
+2) Numero di porta, ossia un indirizzo locale nel quale vengono smistate eventuali richieste.
+
+La comunicazione dunque fra client e server, porta il SERVER a stabilirsi in una ben definita porta. Il CLIENT invece non ha vincoli sul numero di porta. Se parliamo di comunicazione locale, l'indirizzo IP di default sarà localhost o "127.0.0.1", se invece trattiamo la comunicazione internet, l'indirizzo IP sarà quello legato al PC sul quale gira il processo. 
+LINUX tratta le socket avvalendosi del meccanismo usato per la gestione dei file. Assegna a ciascuna di esse un descrittore, un valore intero non negativo. 
+Un server gestisce la socket tramite le seguenti API:
+
+- socket().
+- bind().
+- listen().
+- accept().
+- read().
+- write().
+- close().
+
+Il server crea dunque la socket richiamando la funzione socket(). I parametri passati sono domain, type e protocol. 
+Di default nel campo domain si inserisce AF_INET, che indica una connessione ad internet, type specifica il tipo di trasmissione, può essere di due tipi:
+
+- SOCK_STREAM, indica che i dati inviati non vengono persi, duplicati o disordinati.
+- SOCK_DGRAM, indice che i dati inviati possono essere persi, duplicati o disordinati.
+
+Il campo protocol stabilisce invece il tipo di protocollo. Di default, con AF_INET, inserendo nel campo type SOCK_STREAM ci riferiamo al protocollo TCP/IP. Il campo protocol verrà dunque settato sempre a 0.
+
+Successivamente il server effettua il BIND della socket, impostando dunque INDIRIZZO IP e NUMERO DI PORTA della socket.
+I parametri dunque della funzione sono i seguenti:
+
+int bind(int socket, const struct sockaddr* address, size_t address_len);
+
+Il campo intero socket specifica il descrittore che si ottiene dalla funzione socket() richiamata dal SERVER. 
+Il secondo parametro definisce una struct che stabilisce NUMERO DI PORTA ed INDIRIZZO IP della socket, il terzo parametro indica la dimensione in byte della struct.
+
+Richiamando la terza API listen(). Il server va a creare una coda di richieste pendenti da parte del client. Dunque se il numero di richieste di connessione è superiore alla dimensione della coda, il server va a rifiutare la connessione da parte del client.
+Dunque l'API listen presenta i seguenti parametri:
+
+int listen(int socket, int backlog);
+
+restituisce 0 in caso di successo e -1 in caso di errore. 
+Il server dunque richiama la funzione accept. Quest'ultima restituisce un descrittore intero diverso da 0 che indica il canale di comunicazione stabilito tra quel determinato CLIENT ed il server.
+Considerando il prototipo vediamo che:
+
+int accept(int socket, const sockaddr* address, size_t * address_len);
+
+Il primo parametro dunque rappresenta il descrittore della socket, il secondo indica l'indirizzo IP e il numero di porta relativo al client che ha fatto richiesta di connessione, il terzo è dunque un puntatore alla lunghezza della struct.
+Dunque non appena viene effettivamente stabilita la connessione tra CLIENT e SERVER vengono utilizzate, per lo scambio dati, le API di gestione dei file. Dunque con la funzione write() e read() si ha la scrittura e lettura da parte dei dati tra i due processi. I prototipi sono i seguenti:
+
+                                        ssize_t read(int fd, void* buf, size_t count);
+                                        ssize_t write(int fd, void* buf, size_t count);
+
+Immettendo dunque come parametro il descrittore, ritornato dalla funzione accept, si permette dunque la lettura e scrittura dei dati. 
+Una volta terminato lo scambio di dati, i due processi client e server richiamano la funzione close() che permette di terminare la connessione e dunque lo scambio di dati. L'API close ha un duplice utilizzo:
+
+1) Termina la connessione col client, se viene inserito come parametro il descrittore ritornato da accept().
+2) Chiude la socket e dunque ogni eventuale scambio di dati se immette il descrittore ritornato da socket().
+                                              
+

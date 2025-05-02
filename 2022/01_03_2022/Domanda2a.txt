@@ -1,0 +1,29 @@
+Descrivere in modo dettagliato i tre differenti modelli per la gestione dei thread user-level:
+• Modello molti-a-uno (M:1)
+• Modello uno-a-uno (1:1)
+• Modello molti-a-molti (M:M)
+
+Sappiamo che il Sistema Operativo gestisce per intero la schedulazione dei processi mediante il PCB (Processo Control Block). Nel momento in cui ciascun processo presenta un numero maggiore di thread, esistono diversi modelli per la gestione dei thread user-level:
+
+1) Modello molti-a-uno (M:1)
+2) Modello uno-a-uno (1:1)
+3) Modello molti-a-molti (M:M)
+
+Il di modello M:1 fa corrispondere a più thread a livello utente un solo thread a livello kernel. In questo caso dunque il Sistema Operativo vede esclusivamente il processo e non i thread. In questo caso se un thread utente richiama una API/System Call bloccante ha come conseguenza il blocco dell'intero processo, in quanto al kernel può accedere un solo thread utente alla volta. D'altro canto risulta invece efficiente la gestione dei thread utente, in quanto essa viene affidata ad una libreria thread nello spazio utente. E' inoltre necessario un sistema a livello utente per la gestione dei thread, inclusa la schedulazione.
+
+ 
+Il modello 1:1 invece fa corrispondere ad un thread a livello utente la creazione di un thread a livello kernel. Dunque la gestione degli user thread è affidata al kernel che possiede una tabella dei thread utente ed inoltre la schedulazione degli user thread viene effettuata con lo scheduler del kernel.
+In generale vi sono due vantaggi fondamentali:
+
+1) Se un thread chiama una system call bloccante, il processo non si blocca e dunque tutti gli altri thread proseguono la loro esecuzione.
+2) Viene dunque sfruttato il concetto di programmazione parallela e concorrente.
+
+Gli svantaggi sono legati dunque:
+
+1) Disposizione di un kernel multithread.
+2) Alla creazione di un thread a livello utente si verifica la creazione di un thread a luvello kernel, dunque si ha un limite sul numero di thread utente che possono essere creati per processo.
+
+Possiamo inoltre dire che gli odierni sistemi Windows, UNIX e Solaris adottano questo tipo di modello.
+
+Il modello M:M fa corrispondere a più thread a livello utente, un numero minore uguale di thread a livello kernel. In questo caso il Sistema Operativo vede e schedula solo i thread a livello del kernel.
+In questo senso, lo svantaggio fondamentale è legato ad una implementazione molto complessa.

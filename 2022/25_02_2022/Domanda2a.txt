@@ -1,0 +1,11 @@
+Descrivere il funzionamento dei socket e la loro implementazione nelle Librerie POSIX. Discutere in modo dettagliato il funzionamento di un server multi-thread.
+
+Un altro mezzo fondamentale per lo scambio di dati fra i processi è quello delle socket. La socket per definizione è una risorsa, gestita dal Sistema Operativo, che si pone ai due estremi di un canale di comunicazione fra due processi CLIENT e SERVER. Il canale di comunicazione può essere una reale connessione ad internet oppure una comunicazione locale, quindi fra processi dello stesso PC. Il canale di comunicazione può essere TCP o UDP. Ciascuna socket è definita mediante:
+
+- Indirizzo IP, che identifica il Computer sul quale sta eseguendo il processo.
+- Numero di Porta, che è un indirizzo locale che permette di smistare eventuali richieste dal client.
+
+La libreria POSIX definisce lo scambio di dati con le SOCKET utilizzando le stesse API/System Calls per la gestione dei file. Dunque associa a ciascuna socket un descrittore, un intero non negativo, e mediante write(), read() e close() permette lo scambio dei dati. Inserendo come parametro il descrittore relativo a quel particolare socket, dunque avendo impostato IP e Numero di Porta. 
+L'implementazione di un server multithread è la più utilizzata poichè nella realtà quest'ultimo deve rispondere a più richieste di connessione del client.
+Il server dunque per ciascun client che fa richiesta di connessione, crea un thread che gestisce la comunicazione con quel client. Quando il client si disconnette, il thread finisce. Il server dunque si limita a gestire le connessioni col client. Si rende inoltre ciascun thread detached, in maniera tale che le risorse del thread vengano rilasciate dal SO alla sua terminazione.
+

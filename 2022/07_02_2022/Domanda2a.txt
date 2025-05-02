@@ -1,0 +1,23 @@
+Descrivere in modo dettagliato i tre differenti modelli per la gestione dei thread user-level:
+• Modello molti-a-uno
+• Modello uno-a-uno
+• Modello molti-a-molti
+
+Sappiamo che il Sistema Operativo gestisce la schedulazione dei processi. Quando ciascun processo è caratterizzato da più thread, distinguiamo tre modelli di gestione:
+
+1) Modello molti-a-uno.
+2) Modello uno-a-uno.
+3) Modello molti-a-molti.
+
+Il modello molti a uno fa corrispondere a molti thread a livello utente, un unico thread a livello kernel. Il Sistema Operativo dunque vede il processo ma non i thread. Si ha dunque una gestione dei thread a livello utente efficace grazie ad una libreria di thread a livello kernel. Ma se un thread utente richiama una API o System Call bloccante viene bloccato l'intero processo.
+Con questo modello non si va a sfruttare il concetto di parallelismo poichè può accedere al kernel un unico thread a livello utente per volta. Il modello molti ad uno inoltre richiede l'implementazione di un sistema che permetta la schedulazione dei thread.
+
+Il modello uno-ad-uno invece fa corrispondere ad un thread a livello utente un thread a livello kernel. In questo senso, la gestione degli user thread è affidata ad un kernel thread.
+Il kernel thread mantiene dunque una tabella di thread utente e permette la schedulazione degli user-thread con lo scheduler del kernel.
+Il modello uno ad uno presenta il vantaggio dunque legato al fatto che se un thread si blocca, tutti gli altri proseguono la loro esecuzione. Inoltre viene sfruttato il concetto di programmazione parallela/concorrente.
+D'altro canto vi sono una serie di svantaggi:
+
+1) E' necessario la disposizione di un kernel multithread.
+2) Alla creazione di un thread a livello utente si avrà la creazione di un thread a livello del kernel, esso comporterà l'allocazione di risorse in memoria che è proporzionale al numero di thread che si va a creare. Dunque si ha un limite sul numero massimo di thread utente che possono essere creati.
+
+Il modello molti a molti fa corrispondere a molti thread utente un numero minore o uguale di thread a livello del Kernel. In questo senso il Kernel del sistema operativo effettuerà la schedulazione solamente sui thread che si trovano a livello del kernel. Lo svantaggio fondamentale è legato ad una implementazione che risulta molto complessa. 

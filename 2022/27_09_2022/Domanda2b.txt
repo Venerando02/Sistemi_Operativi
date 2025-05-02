@@ -1,0 +1,12 @@
+Illustrare in modo approfondito il problema dei processi Zombie. Descrivere come possono essere usati i
+segnali per la gestione automatica dei processi Zombie.
+
+
+Normalmente alla terminazione di un processo il Sistema Operativo compie una serie di azioni:
+
+- Legge lo stato di ritorno del processo nel PCB, dunque comprende se esso è terminato in modo NORMALE oppure in modo ANORMALE.
+- Se il processo è terminato in maniera normale, viene dunque letto il valore di ritorno del processo, ritornato mediante la funzione exit() o return() nel quale viene passato come parametro formale.
+- Viene deallocato il PCB e tutte le risorse del processo vengono dunque liberate.
+
+Ben diverso è quando parliamo dei processi figlio. In questo caso il PCB e dunque tutte le risorse del processo rimangono dunque allocate fino a quando il processo creante (Processo PADRE) legge lo stato di terminazione e dunque il valore di ritorno del figlio se terminato NORMALMENTE. Il padre dunque compie una azione di sincronizzazione con la terminazione del processo figlio, attraverso la funzione wait() che è bloccante. In generale, richiamando la API wait(), il processo PADRE si blocca fino a quando il processo figlio non termina. Viene ritornato dunque l'identificativo del figlio terminato e viene dunque deallocato il PCB del processo figlio e liberate tutte le risorse. 
+Se il processo figlio termina e il padre non si è ancora sincronizzato con esso, le risorse del figlio e dunque anche il PCB rimangono allocate. Il figlio in questo caso assume lo status di processo ZOMBIE, indicato come 'z'. Lo status di processo zombie rimarrà fino a quando il processo Padre leggerà lo stato di ritorno, dunque il valore di ritorno. Una problematica fondamentale si ha quando il processo padre sta eseguendo una operazione lunga di calcolo, dunque una operazione CPU Bound, e dunque non può interrompersi per eseguire la wait(). Sappiamo che alla terminazione di un processo figlio, viene inviato un segnale SIGCHLD dal kernel al padre che di default viene ignorato. Risolviamo dunque il problema definendo una apposita funzione di Signal Handler che catturi il segnale SIGCHLD ed esegua la lettura dello stato di ritorno del figlio. Altra problematica fondamentale si ha nel momento in cui più processi figli terminano consecutivamente. In tal caso si incorre nel rischio di perdere qualche segnale pendente in quanto la memoria PENDING dei segnali è limitata. Dunque implementiamo un ciclo while+wait() che continua la propria esecuzione fintanto che vi è un processo figlio terminato.

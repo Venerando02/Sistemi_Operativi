@@ -1,0 +1,20 @@
+Descrivere in modo approfondito la problematica dell’accesso alla regione critica e della sincronizzazione, illustrando i problemi noti di sincronizzazione affrontati a lezione.
+
+Il problema della sincronizzazione fra i processi nasce nel momento in cui si parla di programmazione parallela/concorrente. Questo tipo di programmazione ostacola la cooperazione fra i processi e dunque lo scambio di dati.
+In generale i due problemi fondamentali della sincronizzazione sono i seguenti:
+
+- Problema della condivisione.
+- Problema della precedenza.
+
+Il primo nasce nel momento in cui si hanno più processi che accedono ad una risorsa condivisa in modo parallelo/concorrente. In generale, l'ordine di accesso dei processi alla risorsa condivisa crea inconsistenza nel dato condiviso. Si risolve questa problematica definendo una sezione di codice atomica, la sezione critica. 
+Per definizione, definiamo una operazione di tipo atomico quando nessun altra operazione può accedere a quei dati condivisi prima che la prima finisca. Su questo concetto si basa la costituzione di una regione critica. Dunque se un processo/Thread vuole accedere a questa risorsa condivisa deve attendere che il processo/thread che ha fatto accesso precedentemente finisca con quei dati. La regione critica è essenzialmente caratterizzata da:
+
+- Sezione di ingresso (entry section, di prenotazione).
+- Sezione di uscita (exit section, di rilascio).
+
+Un processo/thread che vuole accedere alla regione critica deve attendere che il processo/thread che abbia fatto accesso precedentemente esca dalla sezione.
+
+Il problema della precedenza invece nasce dall'ordine entro la quale i processi svolgono determinate operazioni sulle risorse condivise. Supponiamo ad esempio due processi P1 e P2, che eseguono rispettivamente S1 ed S2. Si desidera che l'istruzione S2 venga eseguita solo dopo che S1 è terminata. 
+Questa problematica si va a risolvere con un meccanismo di sincronizzazione che, sia bloccante per il processo P2 fino a quando l'istruzione S1 non è stata eseguita. Non appena essa viene eseguita allora viene dunque sbloccato il processo P2 e viene dunque eseguita l'istruzione S2.
+Un altro problema di precedenza è il problema del produttore/consumatore. In generale si hanno due processi, uno che in loop esegue una operazione di scrittura su di un blocco dati condiviso e l'altro che esegue una operazione di lettura sul blocco dati condiviso. Il problema si risolve con due meccanismi di sincronizzazione, uno che blocchi il processo che legge fino a quando il processo che scrive abbia scritto ed un'altro che compia il viceversa.
+Anche questo problema dunque si traduce come un problema di precedenza, in quanto viene garantita la mutua esclusione fra le due operazioni.
