@@ -1,0 +1,122 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato e quello dei
+lettori/scrittori trattati a lezione, fornendo per entrambi una descrizione tramite pseudo-codice.
+
+I problemi del produttore/consumatore con buffer limitato e lettori/scrittori sono due problematiche classiche della sincronizzazione tra i processi. 
+Il primo si differenzia dal classico produttore/consumatore poichè il produttore continua a scrivere sul buffer di dati fino a quando non si satura e non preoccupandosi che il consumatore abbia effettivamente letto. Mentre quindi nel classico produttore - consumatore ad una operazione di lettura corrispondeva una operazione di scrittura. 
+Dunque la risoluzione del problema verte nel trovare un meccanismo che blocchi il produttore quando il buffer di memoria limitata si riempie e che inizi la produzione non appena il consumatore abbia letto un elemento.
+Ai fini della risoluzione del problema, abbiamo quindi bisogno di due semafori contatori e un semaforo binario.
+Consideriamo una coda implementata tramite un vettore di dimensione pari a SIZE.
+I due processi eseguono le seguenti operazioni:
+
+1) Il processo produttore effettua l'inserimento nella coda -> enqueue().
+2) Il processo consumatore estrae l'elemento dalla testa della coda -> dequeue().
+
+Abbiamo quindi bisogno di 3 semafori:
+
+1) posti_pieni inizializzato a 0:
+
+- Incremento ad ogni produzione.
+- Decremento ad ogni consumo.
+
+Servirà al processo consumatore per capire quanti elementi vi sono da estrarre nella coda.
+
+2) posti_vuoti inizializzato a SIZE:
+
+- Incremento ad ogni consumo.
+- Decremento ad ogni produzione.
+
+Servirà al processo produttore per capire quanti posti liberi vi sono in coda. 
+
+3) mutex, semaforo binario o lock mutex, per gestire la mutua esclusione tra i due processi.
+
+PSEUDO-CODICE:
+
+init(mutex, 1);
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+
+void produttore()
+{
+  message m;
+  while(TRUE)
+  {
+    produci m;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(m);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}
+
+void consumatore()
+{
+  message m;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    m = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    consuma m;
+  }
+}
+
+Il problema dei lettori - scrittori si ha quando due gruppi di processi (numero processi > 1) hanno accesso con privilegi differenti ad una risorsa condivisa, ovvero un database.
+I processi READERS hanno accesso in lettura alla risorsa condivisa. Essi possono accedere in modo parallelo/concorrente alla risorsa.
+I processi WRITERS hanno accesso esclusivo in scrittura alla risorsa condivisa. Quindi se un WRITER accede alla risorsa, allora nessun altro processo READER o WRITER può accedervi, ma deve attenderne la terminazione. 
+Esistono due tipologie del problema:
+
+1) dare precedenza ai READER, si predilige dare quindi precedenza ai lettori.
+2) dare precedenza ai WRITER, cioè se un writer ottiene l'accesso, tutti gli altri reader o writer rimangono in attesa che termini.
+
+Prediligiamo dare precedenza ai READERS con il seguente protocollo di accesso:
+
+1) I processi READERS possono accedere in modo concorrente alla risorsa condivisa.
+2) I processi WRITER rimangono in attesa fin quando almeno un READER ha accesso alla risorsa condivisa.
+3) Se UN WRITER ottiene l'accesso alla risorsa, tutti gli altri READER e WRITER rimangono in attesa che esso termini.
+
+Per la risoluzione del problema abbiamo bisogno di una variabile condivisa, chiamata read_count, che permette l'aggiornamento del numero di lettori cha hanno fatto accesso alla risorsa condivisa in maniera concorrente.
+Abbiamo inoltre bisogno di due semafori binari o lock mutex che chiamiamo 'mutex' e 'rw_mutex'. Il primo permette di gestire la regione critica legata all'aggiornamento del numero di lettori. Il secondo invece gestisce la mutua esclusione tra READERS e WRITERS, permette ai READERS di bloccare i WRITER e permette al WRITER di bloccare sia READERS che WRITERS.
+
+PSEUDO-CODICE:
+
+int read_count = 0;
+init(mutex, 1);
+init(rw_mutex, 1);
+
+void Reader()
+{
+  while(TRUE)
+  {
+    P(mutex);
+    read_count++;
+    if(read_count == 1) P(rw_mutex);
+    V(mutex);
+    
+    operazione di lettura;
+    
+    P(mutex);
+    read_count--;
+    if(read_count == 0) V(rw_mutex);
+    V(mutex);
+  }
+}
+
+void Writer()
+{
+  while(TRUE)
+  {
+    P(rw_mutex);
+    
+    operazione di scrittura;
+    
+    V(rw_mutex);
+  }
+}
+

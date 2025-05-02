@@ -1,0 +1,113 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato e dei
+lettori/scrittori trattati a lezione, fornendo per entrambi una descrizione tramite pseudo-codice.
+
+Due dei problemi classici della sincronizzazione fra i processi sono:
+- problema del produttore/consumatore con buffer limitato.
+- problema dei lettori/scrittori.
+
+Il problema del produttore/consumatore con buffer limitato pone come elemento di condivisione un buffer limitato di memoria e si distingue dal problema classico del produttore/consumatore con blocco dati condiviso poichè, mentre nel caso classico ad una operazione di produzione corrisponde una operazione di consumo. In questo caso il processo produttore mantiene la sua produzione non curandosi che il processo consumatore abbia effettivamente consumato. La continua produzione del processo porterà dunque alla saturazione del buffer di memoria. Al fine di risolvere questo problema, abbiamo bisogno di un meccanismo di sincronizzazione che sia bloccante per il produttore nel momento in cui il buffer è saturo, e che lo sblocchi nel momento in cui il consumatore ha letto almeno un elemento. Abbiamo inoltre bisogno di un altro meccanismo di sincronizzazione che invece permetta di bloccare il consumatore quando non vi è alcun elemento da leggere nella coda. 
+Consideriamo in tal senso un esempio pratico. Supponiamo di avere una coda, implementata tramite vettore di dimensione pari a SIZE. In tal senso i due processi produttore e consumatore si limitano ad inserire ed estrarre un elemento dalla coda. Dunque:
+- Processo produttore -> Inserisce un elemento in coda -> enqueue().
+- Processo consumatore -> Estrae un elemento dalla testa della coda -> dequeue().
+Al fine di risolvere questo problema, abbiamo dunque bisogno di due semafori contatori e di un semaforo binario. Chiameremo i semafori contatori come 'posti_pieni' e 'posti_vuoti' ed il semaforo binario/lock mutex come 'mutex'. 
+Il principio di utilizzo è dunque il seguente:
+
+- posti_pieni, inizializzato a 0:
+  - incremento ad ogni produzione.
+  - decremento ad ogni consumo.
+Serve al processo consumatore. 0 indica che non vi sono elementi da estrarre in coda dunque il consumatore si blocca.
+
+- posti_vuoti, inizializzato a SIZE:
+  - incremento ad ogni consumo.
+  - decremento ad ogni produzione.
+Serve al processo produttore. 0 indica che la coda è piena e dunque il produttore si blocca.
+Utilizziamo il semaforo binario mutex per gestire la mutua esclusione tra le due operazioni.
+
+PSEUDO-CODICE:
+
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+init(mutex, 1);
+
+void produttore() 
+{
+  message M;
+  while(TRUE)
+  {
+    produci M;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(M);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}
+
+void consumatore() 
+{
+  message M;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    M = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    
+    consuma M;
+  }
+}
+
+
+Il problema dei READERS/WRITERS si ha quando due gruppi di processi (con un numero > 1) accedono con modalità differenti ad una risorsa condivisa, dunque un database. 
+I processi READERS accedono in lettura alla risorsa condivisa. Possono accedere alla risorsa più processi READERS in modo parallelo e concorrente.
+I processi WRITERS hanno privilegio esclusivo di scrittura sulla risorsa condivisa. Dunque se un WRITER ottiene l'accesso alla risorsa condivisa, tutti gli altri processi READER e WRITER devono aspettare la terminazione del processo.
+Consideriamo in tal senso due tipologie del problema:
+- Dare precedenza ai READER. 
+- Dare precedenza ai WRITER. 
+Il primo assume il seguente protocollo di accesso:
+- I processi READER possono accedere in modo parallelo/concorrente alla risorsa condivisa.
+- Il processo WRITER rimane in attesa fino a quando almeno un READER ha fatto accesso sulla risorsa.
+- Se il processo WRITER ha effettuato l'accesso alla risorsa, tutti gli altri READER e WRITER rimangono in attesa che quest'ultimo finisca.
+Al fine della risoluzione del problema abbiamo dunque bisogno di:
+- Una variabile statica, chiamata read_count, che permette di conteggiare il numero di lettori che hanno avuto accesso alla risorsa condivisa.
+- Due semafori binari, che chiameremo mutex e rw_mutex. Il primo permette di gestire la regione critica legata all'aggiornamento della variabile read_count, il secondo invece permette di gestire la mutua esclusione tra i processi READER e WRITER. In particolare permette ai READER di accedere alla risorsa in maniera parallela/concorrente e di porre in stato di attesa i WRITERS. Inoltre al processo WRITER che ha avuto accesso alla risorsa permette di porre in attesa gli altri READERS e WRITERS.
+Consideriamo il seguente pseudo-codice:
+
+int read_count = 0;
+init(mutex, 1);
+init(rw_mutex, 1);
+
+void writer()
+{
+  while(TRUE)
+  {
+    P(rw_mutex);
+    
+    operazione di scrittura;
+    
+    V(rw_mutex);
+  }
+}
+
+void reader()
+{
+  while(TRUE)
+  {
+    P(mutex);
+    read_count++;
+    if(read_count == 1) P(rw_mutex);
+    V(mutex);
+    
+    operazione lettura;
+    
+    P(mutex);
+    read_count--;
+    if(read_count == 0) V(rw_mutex);
+    V(mutex);
+  }
+}

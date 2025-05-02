@@ -1,0 +1,36 @@
+Descrivere in modo dettagliato l’algoritmo di schedulazione CFS di Linux, includendo tutti i parametri relativi
+alla priorità dei processi.
+
+L'algoritmo CFS (Completely Fair Scheduler) viene aggiunto a partire dalla versione 2.6.23 del kernel di LINUX. Sappiamo che LINUX adotta una schedulazione basata su priorità, nel quale esistono diverse classi di priorità ciascuna con il proprio algoritmo di schedulazione.
+In generale in LINUX abbiamo due classi indipendenti di priorità, ovvero:
+- Scheduling Real-Time, secondo lo standard POSIX.1.b:
+  - Priorità nell'intervallo [0; 99].
+- Scheduling predefinito:
+  - CFS (Completely Fair Scheduler).
+  - Prioritò nell'intervallo [100; +139].
+  - Viene applicato per i processi utente.
+Per i processi utente viene dunque adottato l'algoritmo CFS che è un algoritmo di tipo:
+- Preemptive basato su un paricolare quanto di tempo.
+- Effettua lo scheduling sulla base delle priorità.
+
+CFS mantiene una serie di parametri fondamentali per ciascun processo. Considerando che lo user-space priority range è nell'intervallo [100; 139], notiamo come vengano mantenuti due parametri fondamentali: NI e PRI.
+- NI è il cosiddeto 'Nice Value' ed è definito nell'intervallo [-20; +19].
+- PRI è il corrispondente valore di priorità del processo definito nell'intervallo [0; +39].
+La relazione che lega NI e PRI è dunque la seguente:
+                                                 NI = PRI - 20
+Dunque i processi che hanno NI = -20, avranno PRI = 0 e un valore di priorità pari a 100.
+I processi che hanno NI = +19, avranno PRI = 39 ed un valore di priorità pari a 139.
+Di default viene assegnato il valore di NI = 0 ai processi, dunque PRI = 20 e priorità di 120.
+
+Possiamo inoltre dire che l'algoritmo CFS è un algoritmo di tipo preemptive basato sulla scelta di un particolare quanto di tempo. CFS mantiene dunque una variabile TL (Target Latency), che rappresenta un intervallo di tempo tale per la quale tutti i task in stato di pronto devono essere eseguiti almeno una volta nell'ambito dell'intervallo.
+La latenza obbiettivo è dunque utile per l'assegnazione del tempo di utilizzo della CPU nella gestione dei processi. Sappiamo che ciascun NI ha uno specifico wi (Weight value). Minore è il NI (maggiore è la priorità) e più grande sarà il valore di Wi.
+Dunque, considerando TL la latenza obbiettivo, wi il weight value associato a quel processo, possiamo dunque dire che il tempo di utilizzo della CPU associato a processo i-esimo è dato dalla formula:
+                                     (TL * wi) / (somma di tutti i task in stato di pronto)
+                                     
+Dunque maggiore è la priorità del processo e dunque maggiore è il tempo in cui viene assegnata ad esso la CPU.
+L'algoritmo CFS effettua la schedulazione sulla base della priorita. In tal senso la priorità viene definita come una variabile vruntime, essa rappresenta dunque un tempo virtuale di esecuzione del processo fino al momento del task. 
+Quando NI = 0 allora vruntime = tempo effettivo di esecuzione.
+Sappiamo che la schedulazione dei task nell'algoritmo CFS è dunque legata ad un Albero Binario di Ricerca (ABR) Bilanciato, dunque significa che i task che entrano nello stato di pronto vengono dunque inseriti nell'albero in base al valore di vruntime. Stanno dunque a sinistra i task che hanno priorità alta (NI < 0) e vruntime < tempo effettivo di esecuzione. 
+Stanno a destra i task che hanno priorità bassa (NI > 0) e vruntime > tempo effettivo di esecuzione.
+Vengono dunque schedulati per primi i task a sinistra dell'albero, non appena scade il timer, mediante la definizione ella variabile rb_leftmost, viene selezionato il task più a sinsitra dell'albero. La definizione di rb_leftmost permette dunque tempi di accesso e ricerca molto più rapidi -> Tempo (O(Log(N))). 
+Non si andrà mai incrontro al problema della starvation dei processi, in quanto i task a destra avranno comunque vruntime più basso dei task che vengono aggiunti, dunque si avrà uno spostamento dei task da destra a sinistra.

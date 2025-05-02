@@ -1,0 +1,43 @@
+Descrivere in modo dettagliato il principio di funzionamento dei segnali nei Sistemi Operativi e, facendo
+riferimento a Linux si parli delle informazioni memorizzate nel PCB finalizzate alla gestione dei segnali. Si
+parli anche dei limiti dei segnali, sempre facendo riferimento a Linux.
+
+Il Sistema Operativo, durante la gestione dei processi, si ritrova a gestire una serie di eventi inaspettati. Essi sono:
+
+1) Errori Run-Time, quindi la divisione per 0 o l'accesso ad un indirizzo di memoria proibito.
+2) Terminazione di un processo figlio.
+3) Comando digitati da tastiera via terminale dall'utente. Ad esempio CTRL+C.
+
+Si definiscono dunque eventi 'asincroni'. Per la gestione degli stessi, il SO implementa il meccanismo dei segnali. I segnali sono di totale gestione da parte del kernel del Sistema Operativo. Un segnale dunque può essere generato da:
+
+- Dal kernel del Sistema Operativo, sulla base di un determinato tipo di evento asincrono.
+- Dall'utente digitando particolari comandi da tastiera, esempio CTRL+C.
+- Un processo, richiedendone l'uso al kernel, al fine di sincronizzarsi con un altro processo.
+
+I segnali hanno un ben preciso ciclo di vita:
+
+1) Un evento asincrono porta il kernel alla generazione di un segnale. 
+2) Il segnale generato si definisce 'pendente' e verrà accodato al processo destinatario.
+3) Il segnale viene dunque consegnato al processo destinatario.
+
+Il responsabile della consegna del segnale pendente al processo destinatario è il kernel. Quest'ultimo dunque si occupa di consegnarlo e di aggiornare lo spazio di memoria dedicato alla memorizzazione dei segnali pendenti nel PCB del destinatario.
+Esiste un limite sul numero di segnali pendenti per tipologia di evento che possono essere memorizzati. In LINUX può essere memorizzato UN solo segnale pendente per ciascuna tipologia di evento asincrono. Si definisce nel PCB del processo la cosiddetta PENDING SIGNAL BITMAP, un vettore binario lungo 64. Quindi se per l'evento X è impostato il bit ad 1 significa che esiste già il segnale pendente per quella tipologia di evento asincrono. 
+Ciascun segnale pendente verrà consegnato solamente quando un processo si trova nello stato di esecuzione. In generale ciascun processo può bloccare la ricezione di segnali e la motivazione sta nell'esecuzione di parti di codice che non possono essere interrotte. Il processo successivamente può sbloccare la ricezione dei segnali.
+Alla ricezione del segnale, ciascun processo può, di default, reagire in uno dei seguenti modi:
+
+- Può ignorare il segnale.
+- Termina. In questo caso si tratta dunque di terminazione ANOMALA. 
+- Termina e genera un CORE DUMP FILE che mostra l'intero stato del processo.
+- Viene posto in stato di STOP. Esso può essere interrotto tramite l'invio di un altro segnale.
+
+Il processo inoltre può catturare il segnale e definirne una delle seguenti azioni:
+
+1) Ignora il segnale. Ciò non vale per i segnali SIGKILL e SIGSTOP.
+2) Comportamento di default. Ad esempio: SIGTERM comporta la terminazione immediata del processo.
+3) Può definire una porzione di codice da eseguire mediante una funzione di SIGNAL HANDLER. In questo caso alla ricezione del segnale il SO forza il processo ad eseguire il codice definito nel SIGNAL HANDLER. Una volta eseguito, il processo riprenderà dal punto in cui si era interrotto.
+
+In generale i segnali presentano due limiti fondamentali:
+
+1) I segnali vengono utilizzati per la sincronizzazione fra i processi. Risulta però fondamentale, ai fini della sincronizzazione, lo scambio di dati fra i processi. A questo proposito i segnali non trasportano informazioni o dati. Dunque il SO utilizza i meccanismi di SHARED MEMORY e SOCKET per lo scambio di dati fra i processi.
+
+2) La memoria 'Pending' dei segnali è limitata. E' possibile dunque memorizzare un solo segnale pendente per tipologia di evento in LINUX.

@@ -1,0 +1,31 @@
+Illustrare il concetto di processo, descrivendo in modo estremamente dettagliato tutti gli stati che attraversa.
+Descrivere i diversi tipi di scheduling (a lungo, medio e breve termine) e descrivere sempre in modo dettagliato
+cos’è il context switching (il cambio di contesto) nella schedulazione dei processi.
+
+Un processo è l'esecuzione del programma sotto il controllo del sistema operativo. Il sistema operativo carica infatti il programma, nonchè una sequenza statica di istruzioni, in memoria. 
+In generale il Sistema Operativo ha il controllo dell'intero ciclo di vita del programma partendo dalla sua creazione fino alla sua terminazione. Il processo quindi attraversa diversi stati:
+
+1) Nuovo (New), il processo è quindi stato creato e caricato correttamente in memoria.
+2) Esecuzione (Running), al processo quindi gli è stata assegnata correttamente la CPU.
+3) Pronto (Ready), significa che il processo è in attesa che gli venga assegnata la risorsa processore.
+4) Attesa (Waiting), significa che il processo è in attesa di un evento, che può essere ad esempio un iterazione I/O oppure la ricezione di un segnale.
+5) Terminazione (Terminating), significa quindi che il processo è terminato ed ha rilasciato tutte le sue risorse.
+
+Avendo un sistema multiprogrammato, vengono quindi caricati in memoria più processi contemporaneamente. L'obbiettivo principale del SO è quindi quello di andare a massimizzare l'utilizzo della memoria, usata nell'allocazione dei processi, e quello della CPU per l'esecuzione dei processi. Il SO quindi offre il servizio dello SCHEDULER DEI PROCESSI al fine di massimizzare l'uso della CPU.
+In generale esistono tre tipologie di scheduler:
+
+- Scheduler a breve termine.
+- Scheduler a medio termine.
+- Scheduler a lungo termine.
+
+Lo scheduler a breve termine è fondamentale per il Sistema Operativo poichè permette di massimizzare la gestione dei processi con le risorse di calcolo che ha a disposizione.
+Nello specifico, lo scheduler a breve termine seleziona quale processo mandare in esecuzione tra quelli nella lista dei processi in stato di attesa. Agisce in un tempo breve che va nell'ordine dei millisecondi oppure secondi. L'elemento che invece materialmente assegna la CPU ai processi è il DISPATCHER. Quest'ultimo è il principale responsabile del CONTEXT SWITCHING (Cambio di contesto). Questo fenomeno si verifica perchè quando un processo passa da stato di esecuzione a stato di attesa, il compito dello scheduler a breve termine è quello di assegnare la CPU ad un altro processo nella coda. In tal senso abbiamo il cambio di contesto.
+
+Lo Scheduler a medio termine ha un compito sempre legato alla multiprogrammazione. Ossia si occupa di liberare la memoria dai processi ai fini di migliorare le prestazioni. 
+Questo fenomeno si definisce come SWAPPING: ossia il Caricamento/Scaricamento a/da memoria.
+
+Lo Scheduler a lungo termine invece ha il compito di caricare in memoria in processi. Si occupa del passaggio dei processi da stato NEW a stato READY. L'obbiettivo principale è che il tempo di caricamento dei processi in memoria sia uguale al tempo entro la quale i processi la lasciano. Un altro compito fondamentale è quello di selezionare i processi per tipologia:
+
+1) I processi I/O Bound, sono quelli che svolgono per la maggior parte del loro tempo operazioni di I/O e non richiedono uso eccessivo di CPU per i calcoli. Se vi fossero solo processi I/O Bound nella coda dei processi in stato di pronto allora la coda sarebbe vuota.
+
+2) I processi CPU Bound, sono quelli che svolgono per la maggior parte del loro tempo operazioni di calcolo e prevedono poche iterazioni di I/O. Se vi fossero solo processi CPU Bound nella coda dei processi in stato di attesa allora la coda sarebbe vuota.

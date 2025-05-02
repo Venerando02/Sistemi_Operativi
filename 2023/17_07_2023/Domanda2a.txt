@@ -1,0 +1,36 @@
+Illustrare il concetto di processo, descrivendo in modo estremamente dettagliato tutti gli stati che attraversa.
+Descrivere in modo dettagliato cos’è il context switching (cambio di contesto) nella schedulazione dei processi.
+
+Per definizione un processo è l'esecuzione materiale di un programma sotto il controllo del Sistema Operativo. Il Sistema Operativo si occupa dunque di caricare in memoria il programma ed allocare tutti gli algoritmi e le strutture dati che permettono l'esecuzione del processo. 
+Il Sistema Operativo dunque gestisce per intero il ciclo di vita di un processo. Quest'ultimo passa da diversi stati prima della sua terminazione. Gli stati che attraversa un processo sono i seguenti:
+
+1) Nuovo (New), significa che il processo è stato creato correttamente e dunque le sue risorse sono state caricate in memoria dal sistema operativo.
+
+2) Esecuzione (Running), il processo si trova dunque nello stato di esecuzione, ovvero ha ricevuto la risorsa CPU.
+
+3) Pronto (Ready), il processo dunque è logicamente pronto e rimane in attesa della risorsa CPU.
+
+4) Attesa (Waiting), significa che il processo è in attesa di un evento: una operazione di I/O oppure la ricezione di un segnale.
+
+5) Terminazione (Terminating), significa che il processo è terminato e le sue risorse sono state liberate.
+
+Il Sistema Operativo gestisce ciascun processo registrando tutte le informazioni del processo all'interno del PCB. Quest'ultimo è una struttura dati caratterizzata dalle seguenti informazioni:
+
+1) PID del processo.
+2) Informazioni dello stato del processo (Ready, Waiting ecc.).
+3) Copia dei registri della CPU (Program Counter e Stack Pointer).
+4) Informazioni di I/O (Descrittori di file).
+5) Elenco di segnali pendenti per tipologia di evento.
+6) Informazioni utili allo scheduling (Esempio: Priorità).
+7) Informazioni di Accounting (Esempio: Tempi di creazione utilizzo).
+8) Valori di ritorno (Ritornati dalla funzione exit()).
+
+Il PCB risulta dunque fondamentale nell'assegnazione della CPU ai processi. Il compito a cui spetta l'operazione di assegnazione della CPU è lo scheduler a breve termine. Quest'ultimo gestisce i processi nella lista in stato di pronto seguendo un particolare algoritmo di scheduling. 
+Lo strumento che materialmente si occupa dell'assegnazione della CPU ai processi in stato di PRONTO è il Dispatcher. Quest'ultimo introduce quindi:
+
+1) Context Switching.
+2) Passaggio in modalità utente.
+3) Riavvio del processo in modalità utente.
+
+Ed introduce un ritardo, ossia la latenza di dispatch, legata all'intervallo di tempo che passa dalla sospensione alla assegnazione di un altro processo. 
+Consideriamo dunque l'evento del Context Switching. Quest'ultimo nasce dal fatto che un processo, durante la sua esecuzione, attraversa diversi stati. Quando esso passa da stato di esecuzione a stato di attesa o pronto, il compito dello scheduler è quello di andare a selezionare un altro processo nella lista dei processi in stato di pronto. Sappiamo inoltre che, ai fini dell'efficienza di un algoritmo di scheduling, è necessario minimizzare il numero totale di cambi di contesto. 

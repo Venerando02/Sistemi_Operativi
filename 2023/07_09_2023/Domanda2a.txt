@@ -1,0 +1,31 @@
+Discutere in modo dettagliato la differenza tra processi e thread. Discutere in modo dettagliato gli aspetti inerenti
+la comunicazione tra processi e tra thread.
+
+Per definizione un processo è l'esecuzione di un programma sotto il controllo del Sistema Operativo mentre un thread è una unità di base d'uso della CPU, dunque un flusso di esecuzione a sè stante all'interno dello stesso processo. Di default sappiamo dunque che un processo è caratterizzato da un thread.
+L'uso dei processi comporta una serie di problematiche, esse sono:
+
+1) Scambio di dati limitato. Si ha dunque la necessità di implementare un meccanismo alternativo di condivisione dei dati, ovvero le shared memory e le socket, in quanto lo scambio di segnali non trasporta alcun dato.
+
+2) La gestione di più processi concorrenti comporta un incremento del numero di Context Switch.
+
+3) All'aumentare del numero di processi imparentati incrementano:
+
+- Tempi di creazione dei processi.
+- Si ha un dispendio elevato di memoria nell'allocazione dei processi.
+
+La gestione dei Thread mi permette dunque di risolvere molte di queste problematiche. L'utilizzo dei thread permette una serie di vantaggi quali:
+
+1) L'utilizzo di un unico spazio di indirizzamento nella creazione del thread.
+2) Tracce multiple di esecuzione (Più thread) possono essere eseguiti in modo parallelo e concorrente.
+3) La creazione di un thread comporta dei tempi di creazione e delle risorse nettamente inferiori a quelle di un processo.
+4) L'utilizzo dei thread permette la condivisione di variabili statiche e la possibilità di poter combinare i risultati fra di loro. Inoltre i thread possono definire variabili locali private.
+
+La gestione dei processi risulta dunque più problematica in termini di comunicazione. In generale i processi sono limitati dal SO in quanto non possono accedere ad indirizzi al di fuori del proprio spazio. Dunque la comunicazione tra i processi può avvenire tramite segnali, ma sappiamo che essi non trasportano alcuna informazione. Dunque per lo scambio di dati, il SO implementa un meccanismo di Socket e Shared Memory.
+La comunicazione fra thread risulta molto più semplice. Innanzitutto i thread condividono:
+
+- PID del processo.
+- Sezione dati: variabili statiche e heap.
+- Descrittori di I/O.
+- Copia dei segnali pendenti.
+
+Inoltre vi è la possibilità da parte dei thread di condivisione dei risultati dei loro calcoli, questo tipo di Threading viene definito Joinable. Un thread dunque ha la possibilità di creare un altro thread e sincronizzarsi con la sua terminazione. Il creante dunque sincronizzandosi con il thread creato ha la possibilità, mediante la pthread_join(), di acquisire il risultato elaborato da quest'ultimo e di combinarlo ai propri.

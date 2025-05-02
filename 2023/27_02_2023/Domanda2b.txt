@@ -1,0 +1,60 @@
+Descrivere in modo dettagliato gli algoritmi di scheduling di breve termine trattati a lezione.
+
+Lo Scheduler a breve termine è presente in tutti i sistemi operativi LINUX, WINDOWS e SOLARIS, e permette di andare a selezionare quale processo eseguire tra quelli nella lista dei processi in stato di PRONTO.
+Agisce in un tempo che va dai millisecondi ai secondi. 
+Esistono due tipologie fondamentali di Scheduler:
+
+1) Scheduler Preemptive.
+
+2) Scheduler Not Preemptive.
+
+Lo scheduler Preemptive permette di prelazionare la CPU e quindi decidere la riassegnazione quando i processi passano da:
+
+- Stato di esecuzione a stato di Pronto.
+- Stato di esecuzione a stato di Attesa.
+- Stato di attesa a Pronto.
+- Terminazione del processo.
+
+In ciascuno dei seguenti casi, lo scheduler si occupa della riassegnazione della CPU ai processi in stato di PRONTO. L'elemento fondamentale in questo senso è il PCB di ciascun processo.
+
+Lo scheduler NOT Preemptive non può prelazionare la CPU ai processi, e decide la riassegnazione della stessa quando un processo passa da:
+
+- Stato di esecuzione a stato di Pronto.
+- Terminazione del processo.
+
+Quindi lo scheduler riassegna la CPU solo quando un processo si sospende o termina.
+
+Per ciascun tipo di scheduler, distinguiamo diversi algoritmi:
+
+- Lo Scheduler Preemptive presenta i seguenti algoritmi: RR (Round Robin), SRTF (Shortest Remaining Time First).
+- Lo Scheduler Not Preemptive presenta i seguenti algoritmi: FCFS (First Come First Served), SJF (Shortest Job First), PS (Priority Scheduling).
+
+Analizziamo ciascuno dei seguenti algoritmi.
+Partiamo dal FCFS (First Come First Served). E' l'algoritmo più semplice da andare ad implementare, gestisce i processi in lista di attesa per la CPU come una coda FIFO. Quindi assegna la CPU ai processi nell'ordine cui la ricevono, selezionando il processo da eseguire dalla testa di questa coda. Dunque l'inserimento di ciasun processo viene effettuato come una semplice coda FIFO. L'algoritmo inoltre non essendo PREEMPTIVE non può prelazionare la CPU a meno che il processo in questione si sospenda o termini. 
+I vantaggi sono dunque che è molto semplice da comprendere e da implementare. Lo svantaggio è legato ai tempi medi di attesa dei processi in coda che risultano variabili e dipendono molto dall'ordine entro la quale i processi entrano nello stato di Pronto.
+Capiterebbe dunque che un processo I/O Bound possa avere dei tempi di attesa lunghi poichè sta venendo eseguito un processo CPU Bound che richiede una esecuzione più lunga.
+
+L'algoritmo SJF (Shortest Job First) si pone l'obbiettivo di andare a risolvere la problematica legata all'algoritmo FCFS. In quanto assegna a ciascun processo nella coda una durata. Questo valore di durata è assegnato sulla base delle ultime esecuzioni del processo. Lo scheduler dunque analizza le ultime esecuzioni del processo in questione ed effettua una stima della durata della sua successiva esecuzione. Assegna dunque la cosiddetta NEXT CPU BURST, ovvero la durata della successiva esecuzione del processo. Questo algoritmo di scheduling dunque effettua la schedulazione per brevità di durata. Nel caso in cui invece si hanno gli stessi valori di durata, si procede usando il FCFS.
+I vantaggi sono legati alla minimizzazione dei tempi medi di attesa. Ma lo svantaggio è legato al fatto che non è sempre possibile stabilire con certezza la reale durata di esecuzione futura di un processo, quindi la problematica è legata alla stima della durata.
+
+L'algoritmo PS (Priority Scheduler) effettua la schedulazione sulla base di un parametro, la priorità. Dunque vengono schedulati i processi che hanno una priorità più elevata. Se invece si hanno più processi che hanno la stessa priorità si procede ad usare l'algoritmo FCFS. In generale, la priorità è essenzialmente un valore intero. Non esiste una politica comune di assegnazione delle priorità, in alcuni casi dunque si assegna una priorità alta con valori più bassi, in altri si fa il viceversa. Essa è dinamica e può essere assegnata per cause interne o cause esterne:
+
+- Cause interne: durata di esecuzione del processo, tempi di risposta. 
+- Cause esterne: importanza del processo, proprietario del processo.
+
+Lo svantaggio legato all'utilizzo di questo algoritmo è la 'starvation' dei processi. Ossia la possibilità che i processi che hanno una priorità più bassa abbiamo tempi di attesa molto lunghi. Una possibile soluzione alla starvation è l'aging dei processi, ossia il loro valore di priorità incrementa col passare del tempo.
+
+Consideriamo adesso gli algoritmi dello scheduler PREEMPTIVE. L'algoritmo RR (Round Robin) è una forma di FCFS con prelazione. Si ha una gestione dei processi come una coda FIFO. A ciascun processo dunque verrà assegnata la CPU per un tempo pari al 'time quantum'. Scaduto questo 'time quantum' si potranno verificare due scenari:
+
+- Il processo termina entro il tempo di quanto. Esso quindi rilascia la CPU che verrà riassegnata al processo in testa alla coda FIFO di processi in stato di PRONTO dallo scheduler.
+
+- Il processo non termina entro il tempo di quanto. Dunque appena scadrà il timer, verrà lanciato un interrupt. Quindi il processo verrà rimesso in coda, e verrà riassegnata la CPU ad un altro processo nella coda.
+
+L'efficienza dell'algoritmo dipende essenzialmente dalla scelta del tempo di quanto. Il tempo di quanto influenza il numero di Context Switch all'interno prima del completamento di un processo. Possiamo quindi dire che:
+
+- Un time quantum lungo degenera l'algoritmo in un FCFS.
+- Un time quantum corto, provoca un notevole aumento dei cambi di contesto e quindi un aumento dei tempi di commutazione e gestione di un processo.
+
+L'algoritmo SRTF (Shortest Remaining Time First) è invece una forma di SJF con prelazione. I processi dunque verranno schedulati eseguendo una previsione sulla durata della successiva esecuzione del processo. Quindi verrà eseguita una stima sulla base delle precedenti esecuzioni del processo. Verranno in primis schedulati i processi che hanno una NEXT CPU BURST piccola. 
+La differenza sostanziale con l'algoritmo NOT PREEMPTIVE è che se viene sottomesso un processo che ha una stima della successiva esecuzione del processo minore di quello che sta venendo eseguito, allora lo scheduler effettuerà la prelazione della CPU.
+Il limite fondamentale è sempre legato al fatto che non è possibile stabilire con certezza la durata di esecuzione futura di un processo.

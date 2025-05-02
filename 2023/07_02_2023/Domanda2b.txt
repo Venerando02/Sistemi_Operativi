@@ -1,0 +1,32 @@
+Descrivere in modo dettagliato l’algoritmo di schedulazione CFS di Linux, includendo tutti i parametri relativi
+alla priorità dei processi.
+
+Lo scheduling in LINUX avviene a livello di thread e quindi trattandosi di un modello uno a uno, a ciascun thread utente si associa un task del kernel che viene schedulato. A partire dalla versione 2.6.23 di LINUX è stato aggiunto un nuovo tipo di algoritmo: il CFS (Completely Fair Scheduler).
+Lo scheduling in LINUX è basato quindi sulle priorità. Esistono diverse classi di priorità, ciascuna con il proprio algoritmo di scheduling. Lo scheduling in LINUX presenta due classi distinte di priorità:
+
+1) Sheduling Real-Time, secondo lo standard POSIX.1.b:
+
+- Priorità [0-99].
+
+2) Scheduling predefinito:
+
+- CFS (Completely Fair Scheduler).
+- Priorità [100-139].
+- Riservato ai processi utente.
+
+L'algoritmo CFS è un algoritmo preemptive sulla base di un particolare quanto di tempo e con la schedulazione che viene fatta sulla base di una particolare priorità. In generale CFS assegna a ciascun processo un NI (Nice Value) ed un PRI che ne indica essenzialmente la priorità del processo. 
+Sapendo che lo user-space priority range è [100; 139], possiamo quindi dire che il PRI assume valori nell'intevallo [0; 39], mentre NI assume valori da [-20; +19]. La relazione che lega NI e PRI è NI = PRI - 20.
+Di default a ciascun processo viene assegnato il valore di NI = 0.
+L'algoritmo CFS inoltre mantiene una variabile TL (Target Latency) che indica un intervallo di tempo nella quale tutti i task pronti devono essere eseguiti almeno una volta. Il valore di TL è proporzionale al valore di NI. Se tutti i task pronti avessero quindi lo stesso NI verrebbero eseguiti tutti con lo stesso tempo sempre nell'ambito di TL.
+Sappiamo inoltre che ciascun valore di NI ha un determinato wi (WEIGHT VALUE), più basso è il NI (Più alta è la priorità) più alto sarà il valore w del processo. 
+Data quindi TL (Target Latency) e considerando wi il weight value del processo specifico. Allora il tempo di utilizzo della CPU sarà dato dalla formula:
+                                        (TL * wi) / (somma di tutti i wi dei task pronti)
+In sostanza l'algoritmo CFS schedula i processi utilizzando una struttura ad albero binario di ricerca bilanciato e mantenendo non un valore intero di priorità, come succedeva nel PS, bensì una variabile vruntime che rappresenta il tempo virtuale di esecuzione fino al momento del task.
+In generale i processi che stanno a sinistra (hanno un valore di vruntime più piccolo dell'effetivo tempo di esecuzione) vengono schedulati per primi poichè dispongono di un NI più piccolo (priorità più alta). 
+Quindi la schedulazione avviene nel seguente modo:
+
+1) Tutti i task pronti vengono inseriti nell'albero binario di ricerca. I task più a sinistra hanno un NI più piccolo ed un valore di vruntime minore dell'effettivo tempo di esecuzione.
+2) Vengono quindi schedulati i task più a sinistra dell'albero, a cui si accede tramite una variabile rb_leftmost così da diminuire i tempi di accesso e ricerca del task. Tempo O(log(n)).
+
+Non si rischia la starvation dei processi, ossia tempi di attesa indefiniti, perchè i task a destra dell'albero e quindi quelli con NI più alto non verranno eseguiti per molto tempo, ma hanno comunque vruntime piccolo. Per cui si ha uno spostamento dei task da destra a sinistra.
+

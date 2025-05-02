@@ -1,0 +1,25 @@
+Descrivere in modo dettagliato l’algoritmo di schedulazione CFS di Linux, includendo tutti i parametri relativi
+alla priorità dei processi.
+
+L'algoritmo di schedulazione CFS di LINUX è stato aggiunto a partire dalla versione 2.6.23. Effettua dunque lo scheduling a livello di thread che vengono essenzialmente chiamati task. In generale, Linux adotta effettua lo scheduling sulla base delle priorità, distinguendo diverse classi di priorità ciascuna con il proprio algoritmo di schedulazione.
+
+In LINUX esistono due classi di priorità distinte, ciascuna col proprio algoritmo di schedulazione:
+
+- Scheduling REAL-TIME, secondo lo standard POSIX.1.b, con un range di priorità che va da 0 a 99.
+- Scheduling predefinito. Utilizza l'algoritmo CFS ed ha un range di priorità che va da 100 a 139.
+
+Viene dunque applicato l'algoritmo CFS per la gestione dei processi utente. 
+In generale, possiamo definire l'algoritmo CFS come di tipo PREEMPTIVE sulla base di un particolare tempo di quanto ed inoltre basa la schedulazione su specifici valori di priorità.
+
+CFS assegna, a ciascun processo utente, un determinato valore di NI (Nice Value) il cui range va nell'intervallo [-20; +19]. 
+Sapendo dunque che lo user-space priority range è [100; 139], CFS assegna dunque un altro parametro, ovvero il PRI che corrisponde alla priorità di ciascun processo. Il range in cui è definito PRI è l'intervallo [0; 39]. Vi è inoltre una relazione che lega i parametri NI e PRI. Ossia: NI = PRI - 20. Di default, ai processi utente, CFS assegna un valore di NI = 0, dunque un PRI = 20 ed una priorità pari a 120. 
+Questo algoritmo si dice inoltre PREEMPTIVE sulla base di un particolare quanto di tempo. CFS definisce una TARGET LATENCY (Latenza Obbiettivo) che indica un intervallo di tempo tale che tutti i task in stato di PRONTO devono essere eseguiti almeno una volta nell'ambito di questo intervallo. CFS assegna il tempo di quanto in modo proporzionale al valore di NI del processo. 
+Sappiamo che ciascun NI ha un peso specifico, detto anche weight value, o wi. E' chiaro che i task che hanno un NI più piccolo, avranno un peso molto alto, dunque avranno la CPU per un maggior intervallo di tempo. Sia TL (Latenza Obbiettivo) e detto anche wi il peso associato al NI del task in questione, allora il tempo di utilizzo della CPU per ciascun processo sarà dato dalla seguente formula: 
+                             (TL * wi) / (somma di tutti i weight value dei task in stato di pronto)
+                             
+CFS effettua lo scheduling selezionando inoltre i processi che hanno una priorità più alta. Viene dunque mantenuta una variabile vruntime. Quest'ultima contiene il tempo virtuale di esecuzione di ciascun processo fino al momento del task. 
+I processi che hanno dunque un NI = 0 indicano che vruntime coincide con l'effettivo tempo di esecuzione. 
+I processi che hanno un NI negativo (PRIORITA' ALTA) avranno un vruntime minore dell'effettivo tempo di esecuzione. Vale il viceversa per i processi con NI positivo (PRIORITA' BASSA).
+CFS gestisce i task in stato di pronto utilizzando un albero binario di ricerca (ABR) bilanciato. Verranno dunque schedulati i task che si trovano alla sinistra dell'albero per primi, per un tempo di quanto proporzionale alla TL. Appena scade il timer, verrà selezionato il nodo dell'albero che si trova più a sinistra, a cui si accederà mediante la variabile rb_leftmost che ridurrà i tempi di ricerca ed accesso al task, tempo pari a O(logN).
+Non si andrà mai incontro al problema della starvation, ossia dei tempi di attesa indefiniti dei task con bassa priorità, poichè i task a destra avranno comunque vruntime più piccolo dei task che subentrano nell'ABR, quindi vi sarà uno spostamento dei task da destra a sinistra dell'ABR.
+                                    

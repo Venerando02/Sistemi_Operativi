@@ -1,0 +1,24 @@
+Descrivere in modo dettagliato la gestione dei file (File System) con particolare riferimento a Linux. Illustrare le
+strutture dati necessarie alla gestione dei file. Discutere il problema della gestione dei file nel caso di processi
+non imparentati e nel caso di processi imparentati.
+
+Nei sistemi UNIX/LINUX per ciascun processo, all'interno del suo PCB (Process Control Block), è presente una tabella dei descrittori di file (file aperti). Dunque alla apertura oppure creazione di un file viene generato un descrittore di file, nonchè un valore intero non negativo che viene usato per indicizzare la tabella dei descrittori e che dunque rappresenta un canale di Input/Output tra processo e file. Possiamo dunque dire che le relative operazioni di input/output sul file verranno effettuate passando come parametro formale il descrittore di file. In generale, alla creazione di ciascun processo, le prime 3 locazioni della tabella dei descrittori sono le seguenti:
+- 0, rappresenta lo standard input, stdin.
+- 1, rappresenta lo standard output, stdout.
+- 2, rappresenta lo standard error, stderr.
+Ciascun elemento della tabella dei descrittori di file punta ad un elemento della tabella dei file aperti di tutti i processi, gestita dal Sistema Operativo. In questa tabella è dunque contenuto un puntatore, detto file pointer, che rappresenta il numero di byte letti oppure scritti in seguito ad una operazione di lettura/scrittura sul file. Dunque una successiva operazione di input/output sul file ripartrà dal valore in byte indicato dal file pointer. 
+Possiamo inoltre dire che alla creazione o apertura di ciascun file, viene caricato un elemento in memoria dal sistema operativo, nonchè il cosiddetto I-Node. Esso contiene una serie di informazioni importanti sul file:
+- Appartenenza.
+- Modalità di accesso (lettura/scrittura).
+- Dimensione.
+- Tempi di creazione e modifica sul file.
+- Indirizzi utili all'accesso fisico sul file.
+Ciascun I-Node fa parte della cosiddetta tabella degli I-Node che viene comunque gestita dal Sistema Operativo. Dunque LINUX/UNIX utilizza una gerarchia di tre tabelle nella gestione dei file:
+- Tabella dei descrittori di file.
+- Tabella dei file aperti di tutti i processi.
+- Tabella degli I-Node.
+Processi indipendenti e dunque non imparentati che accedono allo stesso file avranno dunque entry diverse nella tabella dei file aperti di tutti i processi, dunque differente file pointer, ma condivideranno lo stesso I-Node.
+Ben differente è il discorso dei processi imparentati (Padre/Figlio), alla creazione di un figlio sappiamo che si verifica la creazione del PCB, relativo al processo figlio, nel quale vengono dunque duplicate le informazioni del padre immediatamente prima che venga eseguita la fork(). In questo momento dunque i due processi imparentati condividono la stessa entry sulla tabella dei file aperti di tutti i processi e dunque avranno un file pointr condiviso. 
+Al fine di avere un differente file pointer ed utilizzare il meccanismo dei processi indipendenti uno dei due processi deve chiudere e riaprire il file, in maniera tale che abbia una entry differenze nella tabella dei file aperti di tutti i processi e dunque differente file pointer.
+
+

@@ -1,0 +1,122 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato e dei
+lettori/scrittori trattati a lezione, fornendo per entrambi una descrizione tramite pseudo-codice.
+
+Due fondamentali problemi classici di sincronizzazione tra processi sono:
+
+1) Problema produttore/consumatore con buffer limitato.
+2) Problema dei lettori/scrittori.
+
+Il primo si differenzia notevolmente dal classico produttore/consumatore con blocco dati condiviso, in quanto mentre nel problema classico ad una lettura si faceva corrispondere una scrittura, adesso il processo produttore continua a produrre non curandosi effettivamente che il consumatore abbia letto. Il produttore dunque continuerà a produrre fino a quando il buffer di memoria non sarà pieno. Ai fini della risoluzione di questo problema ho dunque bisogno di due semafori contatori e di un semaforo binario.
+Supponiamo dunque di avere un buffer di dati limitato, ad esempio una coda FIFO, implementata come un vettore di dimensione pari a SIZE. I due processi produttore e consumatore si limitano ad inserire un elemento in coda oppure estrarlo dalla coda.
+Quindi lo scenario risulta il seguente:
+
+- Processo produttore -> enqueue() -> Inserimento di un elemento in coda.
+- Processo consumatore -> dequeue() -> Estrazione di un elemento dalla coda.
+
+Come abbiamo già detto, abbiamo bisogno di 3 semafori, di cui due sono semafori contatori, ovvero posti_vuoti e posti_pieni, ed un semaforo binario, che chiameremo mutex.
+Dunque attueremo la seguente impostazione: 
+
+- posti_pieni, inizializzato a 0:
+
+- Incremento ad ogni produzione.
+- Decremento ad ogni consumo.
+
+Servirà al processo consumatore per capire quanti elementi deve andare ad estrarre dalla coda.
+
+- posti_vuoti, inizializzato a SIZE:
+
+- Decremento ad ogni produzione.
+- Incremento ad ogni consumo.
+
+Servirà al processo produttore per capire quanti elementi liberi del vettore si hanno in coda.
+Chiameremo dunque mutex, il semaforo binario, che permetterà di gestire la mutua esclusione fra i due processi consumatore e produttore.
+
+PSEUDO - CODICE:
+
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+init(mutex, 1);
+
+void consumatore()
+{
+  message m;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    m = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    consuma m;
+  }
+}
+
+void produttore()
+{
+  message m;
+  while(TRUE)
+  {
+    produci m;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(m);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}
+
+Il problema dei lettori scrittori invece si ha quando due gruppi di processi (Numero di processi > 1) accedono, con modalità differenti, ad una risorsa condivisa come ad esempio un database.
+I processi lettori (READERS) si definiscono come tali poichè accedono in lettura alla risorsa condivisa ed inoltre possono accedervi in maniera concorrente.
+I processi scrittori (WRITERS) hanno privilegio esclusivo. Dunque se un processo WRITER accede alla risorsa condivisa, nessun altro processo READER o WRITER può accedervi. Gli altri processi dunque rimangono in attesa fin quando esso non ha terminato.
+Esistono dunque due tipologie del problema:
+
+1) Dare precedenza ai Reader piuttosto che ai Writer.
+2) Dare precedenza ai Writer dunque se un Writer attende l'accesso nessun altro Reader può iniziare la lettura.
+
+Diamo dunque precedenza ai Reader e adottiamo il seguente protocollo di accesso:
+
+1) I processi READERS possono accedere alla risorsa condivisa (database) in maniera concorrente/parallela.
+2) Il processo WRITER rimane in attesa fino a quando almeno un READER ha accesso alla risorsa.
+3) Se un WRITER ottiene l'accesso alla risorsa, nessun altro READER o WRITER può accedervi, essi rimarranno in attesa che esso finisca.
+
+Risolviamo questa problematica utilizzando una variabile statica, che chiameremo read_count. Essa permetterà dunque di aggiornare il numero di lettori che hanno avuto accesso alla risorsa condivisa. 
+Abbiamo inoltre bisogno di due semafori binari, mutex e rw_mutex. Il primo permetterà dunque di gestire la sezione critica relativa all'aggiornamento della variabile read_count. Il secondo semaforo permetterà di gestire la mutua esclusione tra i due processi.
+PSEUDO-CODICE:
+
+int read_count = 0;
+init(mutex, 1);
+init(rw_mutex, 1);
+
+void writer() 
+{
+  while(TRUE)
+  {
+    P(rw_mutex);
+  
+    operazione di scrittura
+  
+    V(rw_mutex);
+  }
+}
+
+void reader()
+{
+  while(TRUE)
+  {
+    P(mutex);
+    read_count++;
+    if(read_count == 1) P(rw_mutex);
+    V(mutex);
+  
+    operazione di lettura;
+    
+    P(mutex);
+    read_count--;
+    if(read_count == 0) V(rw_mutex);
+    V(mutex);
+  }
+}

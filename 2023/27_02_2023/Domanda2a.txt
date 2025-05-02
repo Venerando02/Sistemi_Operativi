@@ -1,0 +1,23 @@
+Descrivere in modo dettagliato la gestione dei file (File System) con particolare riferimento a Linux. Illustrare le
+strutture dati necessarie alla gestione dei file. Discutere il problema della gestione dei file nel caso di processi
+non imparentati e nel caso di processi imparentati.
+
+Nei sistemi UNIX/LINUX alla creazione di ciascun processo vi è sempre, nel PCB dello stesso, uno spazio dedicato a memorizzare le informazione di I/O del file. Nello specifico viene mantenuta per ciascun processo una tabella dei descrittori (file aperti). 
+Dunque alla creazione o apertura da parte di un di un file, viene generato un descrittore di file. Esso è un valore intero non negativo che rappresenta un canale di comunicazione per le operazioni di I/O tra processo e file. Il descrittore di file permette dunque di indicizzare la tabella dei descrittori di file del processo, le cui prime tre locazioni sono di default le seguenti:
+
+- 0, rappresenta lo standard input, stdin.
+- 1, rappresenta lo standard output, stdout.
+- 2, rappresenta lo standard error, stderr.
+
+Ciascun elemento della tabella dei descrittori del processo punta ad un elemento della tabella dei file aperti di tutti i processi che viene mantenuta dal Sistema Operativo. In essa viene mantenuto, per ciascun file, un file pointer. Quest'ultimo rappresenta il numero di byte letti o scritti in seguito ad una operazione di Input/Output sul file. Di conseguenza, una successiva operazione di I/O sul file ripartirà dal numero di byte indicato dal file pointer.
+Per ciascun file che viene aperto, viene allocata e caricata in memoria una struttura chiamata I-Node che permette di memorizzare una serie di informazioni del file, ovvero:
+
+1) Appartenenza.
+2) Modalità di accesso (lettura/scrittura).
+3) Dimensione.
+4) Tempi di creazione e modifica.
+5) Indirizzi utili per accedere al supporto fisico.
+
+Ciascun I-Node dunque fa parte di una tabella, gestita dal Sistema Operativo, chiamata tabella degli I-Node.
+Possiamo dunque dire che processi diversi, che accedono allo stesso file, hanno entry diverse sulla tabella dei file aperti di tutti i processi, gestita dal Sistema Operativo, ma condivideranno lo stesso I-Node.
+DIscorso differente va fatto per i processi Padre/Figlio. Nel momento in cui si esegue la System Call fork(), che porta dunque alla creazione del processo figlio, viene creato un nuovo PCB per il processo figlio. Quest'ultimo verrà dunque riempito con i dati del processo padre immediatamente PRIMA che esegue la fork(). Per cui i due processi Padre/Figlio avranno uguali descrittori di file e conseguentemente punteranno alla stessa entry sulla tabella dei file aperti di tutti i processi gestita dal Sistema Operativo, ed avranno lo stesso file pointer. Dunque, affinchè i due processi abbiano file pointer separati, è necessario che uno dei due chiuda e riapra il file. Potrebbe essere assegnato lo stesso descrittore di file, ma i due processi Padre/Figlio lavoreranno sul file in maniera indipendente fra loro. 
