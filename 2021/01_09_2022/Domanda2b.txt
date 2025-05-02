@@ -1,0 +1,41 @@
+Descrivere le diverse architetture note in letterature per la realizzazione di un Sistema Operativo.
+
+La progettazione di un sistema operativo è una operazione molto complessa, in quanto va ad impattare su di una serie di concetti fondamentali: implementazione, manutenzione, aggiornamento ed efficienza.
+Esistono in generale quattro strutture di base sulla quale si fonda la progettazione di un sistema operativo, ovvero:
+- Struttura monolitica.
+- Struttura stratificata.
+- Microkernel.
+- Moduli Kernel.
+Gli odierni sistemi operativi adottano delle soluzioni ibride in maniera tale da potenziare le prestazioni in termini di usabilità, sicurezza e protezione. Andiamo ad analizzare ciascuna di queste strutture. 
+
+La struttura monolitica nasce dall'idea di avere pochi processi che svolgono molte funzioni. L'idea di base è quella di un unico programma dispone di poche funzioni che via via vengono incrementate. Nei primi anni 80 le prime forme di sistema operativo si basano su questo tipo di architettura, un esempio è quelli di Windows XP. 
+La realizzazione di questa struttura presenta il vantaggio di avere una buona efficienza nell'uso delle System Calls/API poichè vengono dunque eseguite all'interno di un unico spazio di indirizzamento.
+Lo svantaggio fondamentale è legato alla difficoltà nella manutenzione e l'aggiornamento. In quanto mi basta modificare una singola funzione per ricompilare l'intero programma, dunque anche l'aggiunta di una singola funzione comporta la ricompilazione del programma.
+
+La struttura stratificata consiste nella realizzazione di un Sistema Operativo che sia caratterizzato da strati (moduli) comunicanti fra di loro. La divisione in strati è data dalla scelta di un approccio top-down basato sulla individuazione delle principali funzionalità del sistema e la conseguente divisione in componenti. Possiamo dunque dire che:
+- Ciascuno strato offre dei servizi agli strati superiori.
+- Uno strato inoltre sfrutta i servizi dei livelli inferiori.
+I vantaggi dell'utilizzo di questo modulo sono: 
+- Facilità di debugging.
+- Facilità di aggiornamento. Ciascuno strato offre delle interfacce ai livelli superiori, dunque l'aggiornamento è possibile purchè vengano mantenute le stesse interfacce.
+Gli svantaggi invece sono i seguenti:
+- Difficoltà di progettazione, in quanto ciascun livello deve usare i servizi dei livelli inferiori.
+- Scarsa efficienza, dovuta al fatto che l'esecuzione di ciascuna System Call potrebbe comportare l'attraversamento di diversi lielli e il richiamo di molteplici System Calls annidate. 
+
+Il modello a microkernel nasce dal momento in cui la gestione del kernel monolitico diventava sempre più complicata all'aggiunta di nuove funzioni. Si predilige in questo senso eliminare molte funzionalità dal kernel, a cui vengono lasciate le funzionalità principali. Queste funzionalità vengono definite come programmi client da eseguire in modalità utente. Dunque il compito del kernel è quello di gestione della memoria, scheduling della CPU e gestione della comunicazione fra programmi kernel e client.
+I vantaggi dell'utilizzo di questa struttura sono molteplici:
+- Facilità di aggiornamento dovuta al fatto che i servizi vengono aggiunti essenzialmente come programmi client in modalità utente.
+- Kernel semplice e facile da aggiornare.
+- Maggiore portabilità su una qualunque architettura, sono pochi i moduli che accedono alle risorse hardware.
+- Un malfunzionamento di un programma non interrompe l'esecuzione del kernel. Dunque il programma, essendo eseguito in modalità client, viene bloccato ed il kernel mantiene la sua esecuzione.
+Lo svantaggio è invece legato al fatto che si hanno tempi di esecuzione elevati, in quanto molti servizi importanti vengono eseguiti in modalità utente.
+
+Il modello a moduli kernel invece è realizzato nella maniera seguente:
+- Kernel a cui vengono assegnate le principali funzionalità e servizi.
+- Ciascun servizio viene implementato come modulo dinamico che può essere dunque caricato o scaricato dal kernel dopo la fase di avvio.
+In tal senso il kernel ha la possibilità di caricare più moduli contemporaneamente, anche dopo la fase di avvio. 
+In questo senso si hanno i seguenti vantaggi:
+- Il kernel ha la possibilità di caricare/scaricare moduli senza essere ricompilato.
+- Si superano i limiti del modello stratificato in quanto ciascun modulo usa le funzioni degli altri moduli in maniera efficiente.
+- Si superano i limiti del modello microkernel in quanto la comunicazione fra i moduli è efficiente e veloce. Si ha l'esecuzione dei moduli anche in modalità kernel.
+

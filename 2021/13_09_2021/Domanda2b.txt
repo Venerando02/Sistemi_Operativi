@@ -1,0 +1,18 @@
+Descrivere la gestione del File System. Si descriva IN MODO APPROFONDITO la gestione delle tabelle
+utilizzate per la gestione dei file in ambiente Linux.
+
+Nei sistemi UNIX/LINUX per ciascun processo viene mantenuta una tabella dei descrittori di file (file aperti). Nello specifico alla creazione o apertura di ciascun file viene creato un descrittore di file. Il descrittore è rappresentato come un intero non negativo. Viene utilizzato per l'indicizzazione della tabella dei descrittori di file gestita dal file e rappresenta un canale di INPUT/OUTPUT tra processo e file. In generale, alla creazione di ciascun processo, le prime tre locazioni della tabella dei descrittori di file sono le seguenti:
+- 0, rappresenta lo standard input, stdin.
+- 1, rappresenta lo standard output, stdout.
+- 2, rappresenta lo standard error, stderr.
+
+Ciascun elemento della tabella dei descrittori punta ad un elemento della tabella dei file aperti di tutti i processi che viene gestita dal Sistema Operativo. In generale all'interno di questa tabella è mantenuto un file pointer che indica il numero di byte letti o scritti in seguito ad una operazione di I/O sul file in questione. Possiamo dunque dire che una successiva operazione di Input/Output sul file partirà dal valore in byte letto nel file pointer. 
+Inoltre, alla creazione o apertura di ciascun file, viene caricata in memoria dal Sistema Operativo una struttra chiamata I-Node, che contiene una serie di informazioni, cioè:
+- Appartenenza.
+- Modalità di accesso (lettura/scrittura).
+- Dimensione.
+- Tempi di creazione e modifica.
+- Indirizzi utili per l'accesso fisico.
+
+Ciascun I-Node fa parte della cosiddetta tabella degli I-Node che viene dunque gestita dal Sistema Operativo. In generale, dati dunque due processi indipendenti che aprono lo stesso file, avranno entry differenti nella tabella dei file aperti di tutti i processi, ma avranno in comune lo stesso I-Node nella tabella degli I-Node.
+

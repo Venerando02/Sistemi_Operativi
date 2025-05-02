@@ -1,0 +1,21 @@
+Descrivere in modo preciso e puntuale la gestione dei file da parte del Sistema Operativo. Descrivere sia tutte le strutture dati
+utilizzate dal Sistema Operativo con riferimento a Linux, e come esse vengono gestire dal Sistema Operativo (Linux).
+
+Nei sistemi UNIX/LINUX alla creazione di ciascun processo si ha la creazione di una tabella di descrittori di file (file aperti).
+Alla creazione o apertura di un file si ha la creazione di un descrittore, nonchè un valore intero non negativo che indicizza la tabella dei descrittori di file e che rappresenta dunque un canale di comunicazione I/O tra processo e file. 
+In generale alla creazione di un processo, di default le prime 3 locazioni della tabella sono impostate nel seguente modo:
+
+- 0, rappresenta lo standard input, stdin.
+- 1, rappresenta lo standard output, stdout.
+- 2, rappresenta lo standard error, stderr.
+
+Ciascun descrittore di questa tabella punta ad un elemento della tabella dei file aperti di tutti i processi. Essa viene dunque gestita dal sistema operativo. In essa è inoltre contenuto un puntatore, detto file pointer, che indica il numero di byte letti o scritti in seguito ad una operazione di I/O sul file. Dunque una successiva operazione di input/output sul file partirà dal valore in byte dato dal file pointer.
+Alla creazione di ciascun file viene inoltre allocata una risorsa, chiamata I-Node, che viene caricata in memoria dal Sistema Operativo e contiene una serie di informazioni:
+
+- Modalità di accesso (lettura/scrittura).
+- Appartenenza.
+- Dimensione.
+- Tempi di creazione e modifica.
+- Indirizzi utili per l'accesso fisico al file.
+
+Ciascun I-Node fa parte di una tabella, ovvero la tabella degli I-Node gestita dal Sistema Operativo. Dunque la gestione del file system di LINUX avviene mediante una gerarchia di 3 tabelle. Possiamo inoltre dire che, processi distinti che accedono ad uno stesso file, avranno entry diverse nella tabella ma condivideranno lo stesso I-Node.  

@@ -1,0 +1,55 @@
+Descrivere il problema della sincronizzazione noto come “Lettori-Scrittori con precedenza lettori”.
+Si scriva uno pseudo codice che realizzi le operazioni svolte dai processi lettore e scrittore, facendo uso delle funzioni sui
+mutex/semafori.
+
+Uno dei problemi più noti della sincronizzazione è quello dei Readers-Writers (Lettori - Scrittori). Si hanno due gruppi di processi (Numero processi > 1) che eseguono accedono (con modalità distinte) ad una risorsa dati condivisa, ad esempio un database. 
+I processi noti come Readers accedono in lettura. Si verifica l'accesso parallelo/concorrente alla risorsa dati condivisa.
+I processi Writer hanno privilegio esclusivo di accesso alla risorsa condivisa. Dunque se un writer accede in scrittura alla risorsa condivisa, tutti gli altri processi reader e writer rimangono in attesa che il primo finisca.
+Esistono due tipologie del problema in questione:
+
+- Dare precedenza ai Reader.
+- Dare precedenza ai Writer.
+
+Consideriamo il primo. Il protocollo di accesso alla risorsa è il seguente:
+
+- I processi definiti come Reader accedono in maniera parallela/concorrente alla risorsa condivisa.
+- Il processo Writer rimarrà in attesa fino a quando almeno un Reader ha avuto accesso alla risorsa.
+- Se un Writer ottiene l'accesso alla risorsa condivisa, tutti gli altri processi Reader e Writer rimarranno in attesa che esso finisca.
+
+Risolviamo questo problema utilizzando una variabile statica, chiamata read_count. Quest'ultima permette l'aggiornamento del numero di lettori che hanno avuto accesso alla risorsa dati condivisa.
+Inoltre utilizziamo due semafori binari, che chiamiamo mutex e rw_mutex. Il primo permette di gestire la sezione critica dell'aggiornamento della variabile read_count, il secondo gestisce la mutua esclusione tra processi Reader e Writer.
+PSEUDO - CODICE:
+
+int read_count = 0;
+init(mutex, 1);
+init(rw_mutex, 1);
+
+void Reader()
+{
+  while(TRUE)
+  {
+    P(mutex);
+    read_count ++;
+    if(read_count == 1) P(rw_mutex);
+    V(mutex);
+    
+    operazione di lettura;
+    
+    P(mutex);
+    read_count--;
+    if(read_count == 0) V(rw_mutex);
+    V(mutex);
+  }
+}
+
+void Writer()
+{
+  while(TRUE)
+  {
+    P(rw_mutex);
+    
+    operazione di scrittura;
+    
+    V(rw_mutex);
+  }
+}

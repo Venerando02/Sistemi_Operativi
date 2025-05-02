@@ -1,0 +1,55 @@
+Descrivere il problema della sincronizzazione noto come “Lettori-Scrittori con precedenza lettori”.
+Si scriva uno pseudo codice che realizzi le operazioni svolte dai processi lettore e scrittore, facendo uso delle
+funzioni sui mutex/semafori.
+
+Uno dei problemi più noti della sincronizzazione è quello dei 'Readers-Writers'.
+Il problema nasce quando si hanno due gruppi di processi, intendendo un numero maggiore di 1, che accedono con modalità diverse ad una risorsa condivisa, ovvero quella del database. 
+Distinguiamo i processi READERS come quelli che accedono in lettura alla risorsa condivisa. Possono dunque accedere alla risorsa più processi anche i modo parallelo/concorrente.
+I processi WRITERS invece hanno un accesso privilegiato alla risorsa condivisa. Se dunque un writer accede alla risorsa condivisa, tutti gli altri reader e writer devono attendere che esso finisca prima per potervi accedere.
+Esistono due tipologie del problema in question:
+
+- Dare precedenza ai Reader.
+- Dare precedenza ai Writer.
+
+Il primo predilige dunque l'accesso parallelo/concorrente alla risorsa condivisa. Questo algoritmo ha il seguente protocollo di accesso:
+
+- I processi READER possono dunque accedere in modo parallelo/concorrente alla risorsa condivisa.
+- Un processo WRITER rimane in attesa fino a quando almeno un altro READER ha avuto accesso alla risorsa condivisa.
+- Se un WRITER ottiene l'accesso alla risorsa, gli altri processi READER o WRITER rimangono in attesa fino a quando esso non finisce.
+
+Al fine di risolvere questo problema di sincronizzazione, abbiamo dunque bisogno di due semafori binari o lock mutex, e di una variabile statica. Chiameremo quest'ultima read_count, che mi permetterà dunque di conteggiare il numero di processi READERS che hanno avuto accesso parallelo alla risorsa condivisa. I due semafori binari li chiameremo invece mutex e rw_mutex. Il primo permette di gestire la sezione critica legata all'aggiornamento della variabile statica read_count, il secondo invece garantisce la mutua esclusione tra i due processi. 
+Vediamo dunque lo pseudo-codice:
+
+int read_count = 0;
+init(mutex, 1);
+init(rw_mutex, 1);
+
+void Reader()
+{
+  while(TRUE)
+  {
+    P(mutex);
+    read_count++;
+    if(read_count == 1) P(rw_mutex);
+    V(mutex);
+    
+    operazione di lettura;
+    
+    P(mutex);
+    read_count--;
+    if(read_count == 0) V(rw_mutex);
+    V(mutex);
+  }
+} 
+
+void Writer()
+{
+  while(TRUE)
+  {
+    P(rw_mutex);
+    
+    operazione di scrittura;
+    
+    V(rw_mutex);
+  }
+}

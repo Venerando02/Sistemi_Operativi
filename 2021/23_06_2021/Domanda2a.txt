@@ -1,0 +1,67 @@
+Descrivere il problema della sincronizzazione noto come “Produttore-Consumatore con Buffer Limitato”. Si scriva uno pseudo codice che realizzi le operazioni svolte dai processi produttore e consumatore, facendo uso delle funzioni sui mutex/semafori.
+
+Uno dei problemi classici di sincronizzazione riguarda il Produttore - Consumatore con buffer limitato di memoria. 
+Mentre nel produttore/consumatore con blocco dati condiviso ad una produzione corrisponde una consumazione. In questo caso il processo produttore continua a produrre non curandosi che il consumatore abbia effettivamente consumato. Dunque il produttore manterrà la sua produzione fino a quando il buffer di memoria non sarà saturo. 
+In tal caso è dunque necessario andare ad implementare un meccanismo che permetta di bloccare il processo produttore non appena il buffer di memoria è pieno. Tale meccanismi di sincronizzazione sbloccherà la produzione non appena il consumatore abbia letto almeno un elemento. 
+Consideriamo dunque una coda, implementata tramite vettore, di dimensione SIZE. Le due operazioni che vengono compiute dai due processi produttore/consumatore sono le seguenti:
+
+- Processo produttore -> inserimento in coda -> operazione che definiamo con la funzione 'enqueue()'.
+- Processo consumatore -> estrazione dalla testa della coda -> operazione definita come 'dequeue()'.
+
+Al fine dunque di una risoluzione appropriata del problema abbiamo bisogno di due semafori contatori e di un semaforo binario o lock mutex. 
+Definiamo dunque:
+
+- posti_pieni, inizializzato a 0:
+
+- Incremento ad ogni produzione.
+- Decremento ad ogni consumo.
+
+Serve al processo consumatore per capire quanti posti sono stati riempiti dal processo produttore.
+
+- posti_vuoti, inizializzato a SIZE:
+
+- Decremento ad ogni produzione.
+- Incremento ad ogni consumo.
+
+Server al processo produttore per capire quanti posti vuoti vi sono lungo la coda.
+
+Abbiamo la necessità dunque di un semaforo binario/lock mutex, che chiamiamo mutex. Quest'ultimo permette dunque la gestione della mutua esclusione tra l'operazione di produzione e quella di consumazione.
+
+Consideriamo uno PSEUDO-CODICE:
+
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+init(mutex, 1);
+
+void Consumatore()
+{
+  message M;
+  while(TRUE)
+  {
+    P(posti_vuoti);
+    P(mutex);
+    
+    M = dequeue();
+    
+    V(mutex);
+    V(posti_pieni);
+    consuma M;
+  }
+}
+
+void Produttore()
+{
+  message M;
+  while(TRUE)
+  {
+    produci M;
+    P(posti_pieni); 
+    P(mutex);
+    
+    enqueue(M);
+    
+    V(mutex);
+    V(posti_vuoti);
+  }
+}
+
