@@ -1,0 +1,26 @@
+Illustrare il concetto di processo e di thread. Descrivere in modo dettagliato la differenza tra processi e thread.
+
+In generale definiamo un processo come l'esecuzione materiale di un programma sotto il totale controllo del sistema operativo. Al fine dunque di poter eseguire un programma, nonchè una sequenza di istruzioni statiche, è dunque necessario che il sistema operativo carichi in memoria il programma ed allochi tutte le strutture dati ed algoritmi dello stesso.
+Un thread si definisce come unità di base d'uso della CPU, infatti ad essa si assegnano diversi thread da eseguire. Un modo alternativo per poterla definire è il seguente: un thread è definito come una unità di esecuzione a sè stante all'interno di un processo ed inoltre il thread può utilizzare le funzioni usate dal processo in questione.
+Sappiamo che la gestione di un processo risulta molto complicata, sappiamo dunque che esso presenta i seguenti limiti:
+- Scambio di dati limitato, sappiamo che i processi fra loro scambiano dei segnali al fine di sincronizzarsi fra di loro, ma sappiamo anche che i segnali non trasportano alcuna informazione. Dunque il Sistema Operativo, al fine di favorire lo scambio dei dati fra i processi, implementa dei meccanismi alternativi quali dunque shared memory e socket.
+- La gestione dei processi indipendenti in modo parallelo/concorrente risulta molto complessa in quanto richiede delle operazioni di Context Switch costose.
+- La creazione di più processi imparentati comporta:
+  1) Incremento dei tempi di creazione del processo.
+  2) Aumento della memoria utilizzata.
+L'utilizzo dei thread rappresenta dunque una soluzione alle problematiche di gestione dei processi per i seguenti motivi:
+- Un thread viene eseguito all'interno di un unico spazio di indirizzamento.
+- Tracce multiple di esecuzione (dunque più thread) possono essere eseguite all'interno di un unico spazio di indirizzamento.
+- La creazione di un thread comporta dei tempi di creazione ed un impiego di risorse nettamente minore rispetto a quello dei processi. 
+- Un thread ha dunque la possibilità di poter allocare variabili locali e dunque permette la condivisione di variabili statiche.
+Possiamo dunque dire che thread di uno stesso processo condividono:
+- PID del processo a cui appartengono.
+- Sezione dati: variabili statiche e allocazione dinamica.
+- Informazioni di I/O e dunque descrittori di file aperti.
+- Elenco di segnali pendenti.
+Invece dispongono di privato:
+- TID.
+- Copia dei registri, incluso il program counter.
+- Stack privato, con possibilità di definire variabili locali private.
+
+  

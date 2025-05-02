@@ -1,0 +1,55 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato, fornendo
+una descrizione testuale del problema e della soluzione. È inoltre richiesto una descrizione della soluzione
+tramite pseudo-codice.
+
+Uno dei problemi fondamentali nella sincronizzazione fra i processi è quello del 'produttore/consumatore con buffer limitato'. A differenza del classico produttore/consumatore con blocco dati condiviso dove ad una operazione di produzione si ha una operazione di consumo. In questo caso il processo produttore mantiene la produzione non curandosi che effettivamente il consumatore abbia consumato. Dunque si arriverà alla saturazione dell'area di memoria condivisa che abbia già detto essere limitata.
+Avremo dunque bisogno di un meccanismo di sincronizzazione che permetta di bloccare il processo produttore quando il buffer di memoria è pieno e che dunque lo sblocchi nel momento in cui il processo consumatore ha almeno consumato un elemento. 
+Consideriamo dunque un esempio pratico e supponiamo dunque di avere una coda, implementata come un vettore di dimensione pari a SIZE. Le operazioni che svolgono i due processi sono le seguenti:
+- Processo produttore -> inserimento di un elemento in coda -> enqueue();
+- Processo consumatore -> estrazione di un elemento dalla testa della coda -> dequeue();
+Al fine di risolvere questa problematica abbiamo dunque bisogno di due semafori contatori e di un semaforo binario. Chiameremo i due semafori contatori come 'posti_pieni' e 'posti_vuoti' ed il semaforo binario lo chiameremo 'mutex'. L'utilizzo è dunque il seguente:
+- posti_pieni inizializzato a 0:
+  - incremento ad ogni produzione.
+  - decremento ad ogni consumo.
+Necessario per il processo consumatore. 0 quando non vi sono elementi prodotti.
+
+- posti_vuoti inizializzato a SIZE:
+ - incremento ad ogni consumo.
+ - decremento ad ogni produzione.
+Necessario per il processo produttore. 0 quando non ci sono elementi liberi in coda.
+Il semaforo binario 'mutex' permette invece di gestire la mutua esclusione tra processo produttore e consumatore nell'accesso al buffer. 
+PSEUDO - CODICE:
+
+void produttore()
+{
+  message M;
+  while(TRUE)
+  {
+    produci M;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(M);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}
+
+
+void consumatore()
+{
+  message M;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    M = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    
+    consuma M;
+  }
+}
