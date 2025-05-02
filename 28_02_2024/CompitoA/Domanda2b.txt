@@ -1,0 +1,61 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato, fornendo sia una
+descrizione testuale sia una descrizione tramite pseudo-codice.
+
+Uno dei principali problemi in letteratura, che riguarda la sincronizzazione tra i processi, è quello del produttore consumatore con un buffer limitato di memoria. Mentre nel problema produttore - consumatore con blocco dati condiviso, ad ogni operazione di scrittura corrispondeva una operazione di lettura, in questo caso abbiamo il processo produttore che continua a scrivere su di un buffer limitato di memoria non curandosi se effetivamente il consumatore abbia eseguito l'operazione di lettura. Il processo consumatore continuerà ad eseguire la propria operazione di scrittura sul buffer fino a quando esso non si riempie. 
+In tal caso il produttore aspetterà che il consumatore abbia almeno eseguito una operazione di lettura.
+Un esempio particolare che è possibile fare è il seguente:
+
+supponiamo di avere una coda implementata come un vettore di dimensione pari a SIZE. In questo caso il processo produttore effettuerà una banale operazione di inserimento nella coda, il consumatore invece eseguirà l'operazione di estrazione di un elemento dalla testa della coda.
+Risolviamo il problema mediante 3 semafori, due contatori ed uno binario.
+
+- posti_pieni, che vado ad impostare a 0: 
+  - incremento ad ogni produzione.
+  - decremento ad ogni consumo.
+
+verrà utilizzato quindi dal processo consumatore, per capire quanti elementi ci sono in coda.
+
+- posti_vuoti, che viene impostato a SIZE:
+  - decremento ad ogni produzione.
+  - incremento ad ogni consumo.
+
+verrà quindi utilizzato dal processo produttore, per capire essenzialmente quanti posti liberi ci sono in coda.
+
+- mutex, impostato a 1.
+
+verrà utilizzato per gestire la mutua esclusione tra i due processi.
+
+
+PSEUDO - CODICE:
+
+void consumatore() 
+{
+  message m;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    m = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    consuma m;
+  }
+}
+
+void produttore()
+{
+  message m;
+  while(TRUE)
+  {
+    produci m;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(m);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}
+

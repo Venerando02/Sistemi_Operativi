@@ -1,0 +1,61 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato, fornendo sia una
+descrizione testuale del problema, sia una descrizione testuale e tramite pseudo-codice della soluzione.
+
+Uno dei problemi più noti in letteratura sulla sincronizzazione dei processi è quello del produttore/consumatore con buffer limitato di memoria. Nello specifico, a differenza del più classico produttore/consumatore con blocco dati condiviso in cui ad una operazione di produzione corrisponde una operazione di consumo. In questo caso il processo produttore continua la sua produzione non curandosi che il processo consumatore abbia effettivamente consumato. In tal senso, mantenendo dunque la produzione si arriverà al punto in cui si avrà la saturazione del buffer. Dunque abbiamo la necessità di implementare un meccanismo di sincronizzazione che blocchi il processo produttore quando il buffer si riempie, e che lo sblocchi nel momento in cui il processo consumatore abbia almeno consumato un elemento.
+Consideriamo dunque un esempio che dia una spiegazione dettagliata del problema. Supponiamo di avere una coda, implementata tramite vettore di dimensione pari a SIZE. In tal senso i due processi produttore/consumatore si limitano a svolgere le seguenti operazioni:
+- Processo produttore -> enqueue() -> inserimento di un elemento in coda.
+- Processo consumatore -> dequeue() -> estrazione di un elemento dalla testa della coda.
+
+Risolviamo dunque il problema tramite due semafori contatori e un semaforo binario o lock mutex. Chiameremo i due semafori contatori come 'posti_pieni' e 'posti_vuoti' mentre il semaforo binario 'mutex'. 
+Inizializziamo i semafori in questo modo:
+
+- posti_pieni, inizializzato a 0:
+  - Incremento ad ogni produzione.
+  - Decremento ad ogni consumo.
+Serve dunque al processo consumatore per capire quanti elementi da estrarre sono presenti in coda.
+
+- posti_vuoti, inizializzato a SIZE:
+  - Incremento ad ogni consumo.
+  - Decremento ad ogni produzione.
+Serve dunque al processo produttore per comprendere quanti posti sono liberi nella coda.
+Avremo dunque bisogno del semaforo binario mutex che ci permette di andare a gestire la mutua esclusione tra l'operazione di produzione e quella di consumo.
+
+PSEUDO - CODICE:  
+
+init(mutex, 1);
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+
+void consumatore()
+{
+  message M;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    M = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    consuma M;
+  }
+}
+
+void produttore()
+{
+  message M;
+  while(TRUE)
+  {
+    produci M;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(M);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}
+
+

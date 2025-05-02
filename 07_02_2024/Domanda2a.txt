@@ -1,0 +1,41 @@
+Illustrare il concetto di processo con riferimento agli stati che attraversa. Descrivere le strutture dati che il kernel
+utilizza per gestire i processi. Descrivere cosa è il context switching (il cambio di contesto) nella schedulazione
+dei processi.
+
+Per definizione un processo è l'esecuzione di un programma sotto il controllo del sistema operativo. In generale il Sistema Operativo si occupa del caricamento del programma in memoria, e quindi l'allocazione degli algoritmi e strutture dati necessarie all'esecuzione del processo. In generale il Sistema Operativo gestisce i processi dalla loro creazione alla loro terminazione. Un processo, durante il suo ciclo di esecuzione, attraversa diversi stati:
+
+- Nuovo (New), significa che il processo è stato creato e caricato in memoria.
+
+- Esecuzione (Running), significa che il processo ha ottenuto la CPU.
+
+- Pronto (Ready), significa che il processo è in attesa della risorsa processore.
+
+- Attesa (Wait), significa che il processo è in attesa di un evento che può essere:
+1) Una operazione di I/O.
+2) La ricezione di un segnale.
+
+- Terminazione (End), significa che il processo è terminato e tutte le sue risorse sono state deallocate.
+
+Il sistema operativo gestisce i processi mediante il PCB, quest'ultimo contiene una serie di dati per ciascun processo. In partitcolare:
+
+- PID (Process Identifier).
+- Stato del processo (Attesa, Pronto ecc...).
+- Copie dei registri della CPU: 
+  1) Program Counter.
+  2) Stack Pointer.
+
+- Informazioni di I/O (descrittori di file).
+- Elenco di segnali pendenti.
+- Informazioni di scheduling.
+- Informazioni di accounting e tempi di utilizzo.
+- Valori di ritorno (exit() o return()). 
+
+La gestione dei processi avviene tramite code: 
+
+- Code dei processi in stato di attesa. Quest'ultima contiene i PCB dei processi in stato di attesa. Esistono diverse code di processi in stato di attesa, ciascuna per il tipo di evento e per il tipo di dispositivo di I/O.
+
+- Code dei processi in stato di pronto. Quest'ultima contiene i PCB dei processi in stato di pronto. Possono esistere più code di processi in stato di pronto.
+
+Il servizio che seleziona quindi il processo da mandare in esecuzione è lo scheduler a BREVE TERMINE. In generale, quest'ultimo seleziona il processo da eseguire nella coda dei processi in stato di pronto. L'elemento che si occupa materialmente di assegnare la CPU ai processi scelti dallo scheduler è il DISPATCHER, che è responsabile del CONTEXT SWITCHING.
+Il Context Switching è legato al fatto che il processo assume diversi stati. Può ad esempio passare da uno stato di esecuzione ad uno di attesa. In questo senso, lo scheduler selezionerà quale processo mandare in esecuzione e a cui selezionare la CPU. In In questo caso, si verifica il CONTEXT SWITCH o cambio di contesto.
+

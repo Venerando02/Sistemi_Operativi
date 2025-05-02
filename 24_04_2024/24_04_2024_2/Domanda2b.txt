@@ -1,0 +1,44 @@
+Descrivere in modo dettagliato gli algoritmi di scheduling di breve termine trattati a lezione.
+
+Il compito dello scheduler a breve termine è quello di andare ad assegnare la CPU ai processi in stato di pronto. Dunque si tratta di un compito legato alla multiprogrammazione. In generale, distinguiamo due tipi di scheduler a breve termine:
+- Scheduler Preemptive.
+- Scheduler Not Preemptive.
+Per ciascuna tipologia di scheduler distinguiamo una serie di algoritmi. 
+Per lo scheduler Preemptive, gli algoritmi sono i seguenti:
+- RR (Round Robin).
+- SRTF (Shortest Remaining Time First).
+Per lo scheduler Not Preemptive, gli algoritmi sono:
+- FCFS (First Come First Served).
+- SJF (Shortest Job First).
+- PS (Priority Scheduling).
+Consideriamo inoltre il MQS (Multilevel Queue Scheduling) che invece permette di gestire code di processi a diversi livelli.
+Analizziamo uno ad uno i seguenti algoritmi, partendo da quelli not preemptive.
+
+L'algoritmo FCFS (First Come First Served) è il più semplice da comprendere. Ha una gestione della lista dei processi in stato di pronto come una coda FIFO. Dunque assegna la CPU ai processi estratti dalla testa della coda, mentre dunque un processo in stato di pronto viene inserito come ultimo elemento nella coda. Essendo dunque un algoritmo not preemptive, lo scheduler non può andare in maniera autonoma a prelazionare la CPU ai processi, a meno che essi si sospendano oppure terminano. 
+Il vantaggio dell'utilizzo del FCFS è dunque la facile implementazione e comprensione dell'algoritmo. 
+Lo svantaggio è invece legato ai tempi medi di attesa variabili dovuti all'ordine entro il quale un processo entra in stato di pronto. Capita spesso che processi CPU Bound che hanno un tempo di esecuzione elevato vengano eseguiti prima di un processo I/O Bound che ha una durata di esecuzione molto più piccola.
+
+L'algoritmo SJF (Shortest Job First) si pone l'obbiettivo di risolvere la problematica del FCFS. A tal proposito assegna dunque una durata a ciascun processo. Il principio di assegnazione della durata è legato al fatto che un processo, durante la sua esecuzione, passa da stato di esecuzione a stato di attesa. Dunque viene effettuata una stima della sua successiva durata di esecuzione, sulla base delle ultime esecuzioni del processo. Viene dunque assegnata a ciascun processo la cosiddetta NEXT CPU BURST. L'algoritmo schedula dunque per primi i processi che hanno una durata breve, per i processi che hanno invece stessa durata si procede come un normale FCFS.
+Il vantaggio fondamentale di questo algoritmo è dunque che il tempo medio di attesa viene minimizzato.
+Lo svantaggio è invece legato al fatto che non è possibile stabilire con certezza la durata futura di esecuzione di un processo.
+
+L'algoritmo PS (Priority Scheduling) effettua la schedulazione dei processi sulla base di una priorità. Essa è dunque un valore intero non negativo. Non esiste una politica comune di assegnazione di questo parametro, in certi casi si assegnano valori interi piccoli a priorità maggiori, in altri SO si fa il viceversa. L'assegnazione della priorità avviene inoltre in maniera dinamica e può essere determinata da cause interne (tempo di attesa, durata di esecuzione) e cause esterne (importanza del processo o proprietario del processo).
+Con questo algoritmo vengono dunque schedulati i processi che hanno priorità maggiore, per i processi con uguale priorità si procede con l'algoritmo FCFS. 
+In generale, la problematica a cui si può andare incontro nell'utilizzo di questo algoritmo è la starvation dei processi. Ovvero dei tempi di attesa indefiniti per i processi che hanno priorità bassa. Dunque una possibile soluzione è l'aging dei processi, ovvero viene incrementata la priorità col passare del tempo.
+
+L'algoritmo RR (Round Robin) è una forma di FCFS con prelazione della CPU. I processi vengono dunque gestiti in lista con una politica FIFO. Dunque viene assegnata la CPU ai processi che si trovano in testa nella coda di quelli in stato di pronto. Vi è dunque l'introduzione del 'time quantum' o 'time slice' nella gestione dei processi. Dunque, se scade il tempo di quanto, si possono verificare due scenari:
+- Il processo termina entro il tempo di quanto. In tal caso rilascia la CPU che viene riassegnata dallo scheduler al processo successivo nella coda.
+- Il processo non termina entro il tempo di quanto. Dunque alla scadenza del timer viene lanciato un interrupt, il processo viene dunque messo in coda e viene riassegnata la CPU al processo successivo.
+Capiamo dunque che il tempo di quanto influenza il numero di Context Switch prima del completamento di ciascun processo. Dunque l'efficienza di questo algoritmo dipende dalla scelta del tempo di quanto. Dunque è chiaro che:
+- Un time quantum lungo, degenera l'algoritmo in un FCFS.
+- Un time quantum corto, aumenta i tempi di commutazione/gestione di ciascun processo.
+
+L'algoritmo SRTF (Shortest Remaining Time First) invece è una forma di SJF con prelazione. Dunque a ciascun processo viene assegnata una durata, ovvero la NEXT CPU BURST. In tal senso viene effettuato lo scheduling per brevità di durata. Se dunque viene sottomesso un processo che ha durata di esecuzione (BURST TIME) minore del processo in esecuzione, allora viene dunque prelazionata la CPU.
+
+L'algoritmo MQS (Multilevel Queue Scheduling) permette dunque di gestire code a diversi livelli ciascuna con requisiti e prirità differenti. Parliamo dunque di scheudulazione a priorità fissa con/senza prelazione.
+Dunque, il protocollo di funzionamento è il seguente:
+- I processi della coda dei processi in stato di pronto vengono divisi in gruppi, ciascuno con priorità e requisiti differenti.
+- Ciascun gruppo assume il proprio algoritmo di schedulazione. 
+- Se l'algoritmo è a priorità fissa con schedulazione, vengono dunque schedulati per primi che hanno una priorità maggiore, con prelazione indica che: se è in esecuzione un processo con priorità bassa e viene sottomesso un processo che ha priorità alta allora viene prelazionata la CPU in favore del processo a priorità alta. 
+Parliamo di priorità fissa senza prelazione se, considerando l'esempio precedente, lo scheduler non può prelazionare la CPU e dunque aspetta la terminazione o sospensione del processo in esecuzione per poi assegnare la CPU a quello con priorità alta.
+

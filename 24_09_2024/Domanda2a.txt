@@ -1,0 +1,37 @@
+Discutere in modo dettagliato il meccanismo dei segnali. È richiesta la discussione dettagliata del ciclo di vita di
+un segnale. Descrivere inoltre i possibili comportamenti che un processo può assumere quando gli viene
+consegnato un segnale.
+
+Un sistema operativo, avendo totale controllo del ciclo di vita di un processo, si ritrova molto spesso ad affrontare una serie di eventi inaspettati:
+
+1) Errori RUN-TIME. Ad esempio la divisione di un numero per 0 oppure l'accesso ad un indirizzo proibito.
+2) Terminazione di un processo figlio.
+3) Esecuzione di alcuni comandi da tastiera da parte dell'utente, come ad esempio il comando CTRL+C.
+
+Questa tipo di eventi sono detti 'asincroni'. Ai fini quindi della gestione di questo tipo di eventi, un Sistema Operativo mette a disposizione il meccanismo dei segnali. I segnali dunque sono di totale gestione del Kernel. Possono essere generati per diversi motivi:
+
+1) Su richiesta del Kernel. Nello specifico, esistono diverse tipologie di segnali per ciascun tipo di evento. Quindi, un evento asincrono porta alla generazione di un segnale da parte del Kernel.
+2) Su richiesta dell'utente. Quest'ultimo infatti, digitando alcuni comandi specifici da tastiera, può generare dei segnali.
+3) Su richiesta di un altro processo. Infatti, un processo può richiedere al kernel l'invio di un segnale ad un altro processo. Il motivo principale per cui avviene questo caso è legato alla necessità dei processi di sincronizzarsi tra di loro.
+
+In generale un segnale ha il seguente ciclo di vita:
+
+1) Un evento asincrono porta il Kernel alla generazione di un segnale.
+2) Il segnale, detto pendente, verrà quindi accodato dal kernel nel PCB del processo destinatario.
+3) Il segnale dunque verrà consegnato al processo destinatario.
+
+Possiamo quindi dire che è proprio il Kernel ad andare a occuparsi della consegna del segnale pendente ad un processo. Il Kernel infatti si occupa di aggiornare l'area che memorizza i segnali pendenti nel PCB del processo destinatario. Esiste però un limite legato al quantitativo di segnali pendenti che ciascun processo può memorizzare. Nei sistemi UNIX/LINUX esiste nel PCB di ciascun processo la cosiddetta 'PENDING SIGNAL BITMAP', ovvero un vettore binario lungo 64, tale che se per l'evento X è impostato il bit ad 1, allora esiste quel segnale per quella tipologia di evento.
+LINUX impone dunque che sia possibile memorizzare un solo segnale pendente per ciascuna tipologia di segnale. 
+Il segnale pendente verrà consegnato al processo destinatario durante la fase di esecuzione dello stesso. 
+Fondamentalmente il processo destinatario può avere uno dei seguenti comportamenti di default alla consegna del segnale:
+
+1) Il processo termina. In questo caso la terminazione è ANORMALE. 
+2) Il processo termina e viene generato un CORE DUMP FILE, che dunque descrive l'intero stato del processo.
+3) Il processo ignora il segnale. Questo comportamento avviene solo per particolari segnali.
+4) Il processo viene messo in stato di STOP. Il seguente stato può essere interrotto solo quando il processo riceve un altro particolare segnale.
+
+Il processo d'altro canto può decidere di catturare il segnale ed impostare uno dei seguenti comportamenti:
+
+1) Il processo può ignorare il segnale. Ma ciò non vale per alcuni segnali, in particolare SIGKILL e SIGSTOP.
+2) Il processo può avere un comportamento di default a seconda del tipo di segnale. Esempio: se un processo riceve SIGTERM di default viene terminato immediatamente.
+3) Può definire una porzione di codice, che ne indica l'azione da eseguire alla ricezione del segnale, definendo una funzione di SIGNAL HANDLER. Il SO cattura dunque il segnale pendente e forza il processo ad eseguire quella porzione di codice definita nella funzione.

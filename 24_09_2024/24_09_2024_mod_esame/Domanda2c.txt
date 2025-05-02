@@ -1,0 +1,52 @@
+Spiegare in modo dettagliato in cosa consiste il problema dello scheduling a breve termine. Spiegare inoltre la
+differenza tra scheduler preemptive e non preemptive. Infine descrivere due algoritmi di scheduling a scelta
+dello studente (uno preemptive e uno non preemptive).
+
+Nei sistemi multiprogrammati possono essere caricati in memoria più processi, dunque il compito di un sistema operativo è duplice:
+- Gestione efficace della memoria impiegata nel caricamento dei processi.
+- Massimizzazione dell'uso della CPU impiegata nell'esecuzione dei processi.
+A questo proposito il sistema operativo disponde di un servizio, ovvero quello dello scheduler dei processi. Esso può essere di tre tipologie:
+- Scheduler a breve termine.
+- Scheduler a medio termine.
+- Scheduler a lungo termine.
+In generale il problema dello scheduler a breve termine è legato al concetto di programmazione simultanea dei processi. Quest'ultimo dipende dal tipo di architettura che si ha a disposizione. Esistono varie tipologie:
+- A singola CPU.
+- Multiprocessore (più CPU indipendenti).
+- Multicore (più core indipendenti per una singola CPU).
+- Multiprocessore e Multicore.
+Nei sistemi multiprocessore e multicore l'esecuzione simultanea si implementa come esecuzione parallela dei processi. 
+Nei sistemi a singola CPU viene implementata come programmazione concorrente. Dunque si ha l'avvicendarsi nel tempo dei processi. In quanto può essere eseguito un solo processo alla volta.
+Il compito dunque del sistema operativo è quello di una gestione efficiente dei processi a seconda delle risorse di calcolo con il quale ha a disposizione. Per far ciò si avvale dello scheduler a breve termine.
+Lo scheduler a breve termine ha il compito dunque di selezionare i processi in stato di pronto all'interno di una coda. L'elemento che materialmente si occupa dell'assegnazione della CPU ai processi è il dispatcher. Che introduce:
+- Il cambio di contesto.
+- Riavvio del programma in modalità utente.
+- Esecuzione del programma nel punto in cui si era interrotto (lettura del program counter).
+Possiamo dunque distinguere due tipologie di scheduler:
+- Scheduler PREEMPTIVE.
+- Scheduler NOT PREEMPTIVE.
+
+Il primo permette di prelazionare la CPU ai processi. Dunque deve decidere la riassegnazione della CPU quando un processo passa da:
+- Stato di esecuzione a stato di pronto.
+- Stato di esecuzione a stato di attesa.
+- Stato di attesa a stato di pronto.
+- Termina.
+
+Il secondo invece non può prelazionare la CPU ai processi. Dunque decide la riassegnazione della CPU solamente quando un processo passa da:
+- Stato di esecuzione a stato di attesa.
+- Termina.
+
+Consideriamo dunque, come algoritmo preemptive, il RR e not preemptive il FCFS.
+L'algoritmo FCFS (First Come First Served) gestisce i processi come una coda FIFO. Dunque vengono selezionati i processi dalla testa della coda FIFO e i processi che entrano in stato di pronto vengono inseriti in coda. Dunque, la assegnazione della CPU ai processi avviene nell'ordine entro il quale la richiedono. Lo scheduler, essendo NOT PREEMPTIVE, non può andare a prelazionare la CPU volotariamente, solamente quando un processo si sospende o termina. 
+I vantaggi di questo algoritmo sono: 
+- facile comprensione.
+- facile implementazione.
+Lo svantaggio è invece legato a:
+- Tempi medi di attesa indefiniti, dovuti all'ordine entro il quale i processi entrano nella coda. Molto spesso processi I/O Bound rimangono in coda perchè vengono esegiti processi CPU Bound che hanno un tempo di esecuzione più grande.
+
+L'algoritmo RR (Round Robin) è una forma di FCFS con prelazione. Dunque, la lista dei processi in stato di pronto assume politica FIFO. Dunque, viene assegnata per prima la CPU ai processi che stanno in testa a questa coda. Viene mantenuto un 'time quantum' o 'time slice'.
+Nello specifico viene assegnata la CPU ai processi per un periodo di tempo pari al tempo di quanto. Allo scadere di questo timer si può verificare uno dei seguenti scenari:
+- Il processo termina entro il tempo di quanto. In tal caso rilascia la CPU che viene riassegnata al processo successivo.
+- Il processo non termina entro il tempo di quanto. In tal caso appena scade il timer viene lanciato un interrupt. Dunque il processo viene rimesso in coda e viene riassgnata la CPU al processo successivo.
+Risulta dunque chiaro come l'efficienza dell'algoritmo è legata alla scelta del tempo di quanto. Esso influenza il numero di cambi di contesto, per cui:
+- Un time quantum corto, aumenta i tempi di commutazione/gestione dei processi.
+- Un time quantum lungo, degenera l'algoritmo in un FCFS.

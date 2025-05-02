@@ -1,0 +1,58 @@
+Descrivere in modo dettagliato il problema dei lettori/scrittori, fornendo sia una descrizione testuale sia una
+descrizione tramite pseudo-codice.
+
+Uno dei problemi classici di sincronizzazione è il problema dei lettori scrittori, in questo senso si hanno due gruppi di processi (numero di processi > 1) che accedono ad una risorsa condivisa (ad esempio un database). 
+I due gruppi di processi accedono in maniera differente. 
+I READERS accedono in lettura all'area di memoria condivisa e possono accedervi modo parallelo.
+I WRITERS invece hanno privilegio esclusivo di scrittura sulla risorsa condivisa, in particolare se un processo writer accede alla risorsa, nessun altro processo reader o writer può accedervi. 
+Il problema dei readers e writers presenta due tipologie fondamentali:
+
+1) Dare precedenza ai readers piuttosto che ai writers.
+2) Dare precedenza ai writers, quindi se un processo writer accede alla risorsa condivisa, nessun altro reader può accedervi. 
+
+Dare quindi precedenza ai READERS significa che questo tipo di processi non deve attendere a meno che un processo WRITER abbia avuto accesso alla risorsa condivisa. Il protocollo di accesso sarà il seguente:
+
+1) I processi READERS possono accedere contemporaneamente alla risorsa condivisa.
+2) I processi WRITERS rimangono in attesa fino a quando almeno un READER ha avuto accesso alla risorsa condivisa.
+3) Se un processo WRITER ottiene l'accesso alla risorsa, nessun altro READER o WRITER potrà accedervi. Dovranno aspettare che il WRITER finisca di scrivere.
+
+Per risolvere questo problema ho quindi bisogno di 2 Semafori binari o Lock Mutex e di una variabila condivisa.
+Chiameremo read_count la variabile condivisa che ci permetterà di contare il numero di lettori che hanno avuto accesso alla memoria condivisa.
+Chiameremo mutex il semaforo binario che mi gestirà la sezione critica legato all'aggiornamento della variabile condivisa.
+Infine definiremo rw_mutex, il semaforo binario che permetterà di gestire la mutua esclusione tra readers e writers.
+
+PSEUDO-CODICE:
+
+int read_count = 0;
+init(mutex, 1);
+init(rw_mutex, 1);
+
+void readers()
+{
+  while(TRUE)
+  {
+    P(mutex);
+    read_count++;
+    if(read_count == 1) P(rw_mutex);
+    V(mutex);
+    
+    operazione di lettura;
+    
+    P(mutex);
+    read_count--;
+    if(read_count == 0) V(rw_mutex);
+    V(mutex);
+  }
+}
+
+void writers()
+{
+  while(TRUE)
+  {
+    P(rw_mutex);
+    
+    operazione scrittura;
+    
+    V(rw_mutex);
+  }
+}

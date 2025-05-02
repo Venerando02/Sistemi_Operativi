@@ -1,0 +1,32 @@
+Spiegare in modo dettagliato la differenza tra scheduler preemptive o non preemptive facendo riferimento al
+diagramma a stati di un processo. Discutere in modo dettagliato un algoritmo di schedulazione preemptive e
+uno non preemptive a piacere tra quelli discussi a lezione.
+
+In generale, lo scheduler a breve termine è colui che si occupa dell'assegnazione della CPU ai processi in stato di pronto che sono contenuti nella lista dei processi in stato di PRONTO. Distinguiamo essenzialmente due tipologie di scheduler:
+- Scheduler preemptive.
+- Scheduler not preemptive.
+
+Il primo ha la facoltà di poter prelazionare la CPU ai processi, dunque decide la riassegnazione della CPU nei casi in cui un processo passa:
+- Da stato di esecuzione a stato di pronto.
+- Da stato di esecuzione a stato di attesa.
+- Da stato di attesa a stato di pronto.
+- Termina.
+In ciascuno dei seguenti casi, lo scheduler deve prendere una decisione sulla riassegnazione della CPU.
+Lo scheduler not preemptive, non può prelazionare in maniera autonoma la CPU ai processi. Dunque deciderà la riassegnazione della CPU quando un processo passa:
+- Da stato di esecuzione a stato di attesa.
+- Termina.
+Quindi solo nei casi in cui un processo si sospende o termina, si ha la riassegnazione della CPU ai processi.
+ 
+Consideriamo per lo scheduler not preemptive l'algoritmo FCFS (First Come First Served). Quest'ultimo tratta i processi in lista con una politica FIFO. Dunque come una coda. I processi in stato di pronto dunque saranno inseriti in coda, mentre si assegna la CPU ai processi estraendoli dalla testa della coda. Essendo un algoritmo NOT PREEMPTIVE, la CPU verrà riassegnata solamente quando un processo, in maniera autonoma, si sospende oppure termina. 
+I vantaggi dunque di questo algoritmo sono i seguenti: facile comprensione e facile implementazione.
+Lo svantaggio è invece legato ai tempi medi di attesa variabili. Gestendo i processi come una coda FIFO e dunque assegnando la CPU ai processi nell'ordine entro cui la richiedono, capita spesso che processi I/O Bound, con durata di esecuzione bassa, rimangono in coda per processi CPU Bound, che hanno una durata di esecuzione più lunga.
+
+Per lo scheduler preemptive consideriamo l'algoritmo RR (Round Robin), quest'ultimo è una forma di FCFS con prelazione, dunque vengono trattati i processi in stato di pronto come una coda FIFO. 
+Dunque la CPU viene assegnata ai processi estratti dalla testa della coda FIFO. Essendo un algoritmo preemptive, la CPU verrà assegnata a ciascun processo per un periodo di tempo definito come 'time quantum' o 'time slice'. Significa che, scaduto il tempo di quanto, si potranno verificare due scenari:
+- Il processo termina entro il tempo di quanto. In tal caso il processo rilascia la CPU che viene riassegnata dallo scheduler al processo successivo in coda.
+- Il processo non termina entro il tempo di quanto. In tal caso alla scadenza del timer viene lanciato un interrupt, dunque il processo viene rimesso in coda e la CPU viene riassegnata al processo successivo estratto dalla testa.
+L'efficienza di questo algoritmo dipende dunque dalla scelta del tempo di quanto. Quest'ultimo va ad influenzare il numero di Cambi di contesto prima del completamento di ciascun processo. In generale dunque:
+- Tempo di quanto lungo, degenera l'algoritmo in un FCFS.
+- Tempo di quanto corto, incrementa i tempi di commutazione/gestione di un processo. 
+
+

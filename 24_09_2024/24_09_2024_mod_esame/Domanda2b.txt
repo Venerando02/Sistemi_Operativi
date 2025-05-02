@@ -1,0 +1,20 @@
+Descrivere in modo dettagliato cosa è un thread. Discutere inoltre le strutture dati che i thread di uno stesso
+processo hanno in comune e quelle che non hanno in comune.
+
+Per definizione, un thread è l'unità di base d'uso della CPU. Alla CPU infatti si assegnano thread da eseguire.
+Un thread viene anche definito come una unità a sè stante di esecuzione all'interno dello stesso processo.
+Di default ciascun processo è caratterizzato da un thread, che viene dunque definito come MAIN Thread. La gestione di un thread risulta dunque molto più efficiente rispetto a quella dei processi grazie ai seguenti motivi:
+- Un thread è eseguito all'interno di un unico spazio di indirizzamento.
+- Tracce multiple di esecuzione (Dunque più Threads) sono eseguiti all'interno di un unico spazio di indirizzamento.
+- La creazione di un thread comporta un numero di risorse e tempi di creazione nettamente inferiori rispetto a quelle di un processo imparentato. 
+- I thread garantiscono la condivisione di variabili statiche e la possibilità di definire variabili locali private.
+I thread di uno stesso processo hanno in comune:
+- PID del processo cui appartengono.
+- Sezione dati (dunque variabili statiche e allocazione dinamica).
+- Copia dell'elenco di segnali pendenti.
+- Copia delle informazioni di I/O (dunque descrittori di file).
+I thread hanno invece di privato:
+- TID (Thread Identifier).
+- Copia dei registri della CPU (incluso dunque il program counter).
+- Stack privato, con la possibilità di definire variabili locali private.
+Un processo che dunque è caratterizzato da un singolo thread viene dunque definito come 'HeavyWeight' Process, ovvero un processo pesante. Un processo multi-thread invece riesce a svolgere più compiti in modo parallelo/concorrente sfruttando dunque l'architettura del PC che si ha a disposizione.

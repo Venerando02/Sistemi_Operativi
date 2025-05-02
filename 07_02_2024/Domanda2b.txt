@@ -1,0 +1,20 @@
+Illustrare in modo approfondito il problema dei processi Zombie. Descrivere come possono essere usati i
+segnali per la gestione automatica dei processi Zombie.
+
+Sappiamo che alla terminazione di un processo, che sia in modo NORMALE o ANORMALE, il SO assume un determinato tipo di comportamento.
+In particolare:
+
+- Il SO va a leggere dal PCB del processo lo stato di ritorno, ossia cerca di capire se il processo è terminato in modo NORMALE o ANORMALE.
+
+- Se quindi il processo è terminato in modo NORMALE, viene essenzialmente letto il valore di ritorno del processo, contenuto essenzialmente nel PCB del processo. Ossia quindi il valore ritornato nella funzione exit() o return() definiti nel main.
+
+- Viene deallocato il PCB e quindi vengono deallocate tutte le risorse relative al processo.
+
+Per quanto riguarda invece la gestione dei processi imparentati (Padre/Figlio) abbiamo una gestione diversa. In particolare, alla terminazione del processo figlio, il PCB e le relative informazioni del processo rimangono allocate. 
+Quindi, il processo PADRE dovrà essenzialmente occuparsi di leggere lo stato di ritorno ed il relativo valore di ritorno (se il processo FIGLIO è terminato in modo NORMALE), affinchè possa essere deallocato il PCB e le relative informazioni del processo figlio. 
+Il processo padre, dovrà quindi sincronizzarsi con la terminazione del relativo processo figlio. Per questo motivo, verrà invocata la System Call wait() o waitpid() dal padre. 
+
+Se il processo padre non si sincronizza con la terminazioone del processo figlio, le risorse del processo e il relativo PCB rimarranno allocate in memoria, per cui il processo figlio diventerà ZOMBIE e rimarrà in attesa che il padre legga il suo relativo stato di ritorno. 
+
+Per quanto riguarda la gestione dei segnali, Alla terminazione di ciascun figlio, il kernel genera un segnale di SIGCHLD, che viene accodato al PCB del processo padre. Se quest'ultimo sta eseguendo una operazione che richiede un calcolo, in genere quindi richiede un uso elevato della CPU, allora molto spesso può gestire la terminazione del processo figlio mediante una apposita funzione di SIGNAL HANDLER che cattura il segnale pendente, e che faccia terminare il processo correttamente.
+Questa funzione apposita, può essere usata anche quando si hanno più processi figli. Sapendo quindi che la memoria pending dei segnali in LINUX è limitata (un solo segnale pendente per ogni tipologia di evento), allora potrebbe capitare che avendo più processi figli, alcuni di essi possano terminare quasi contemporaneamente fra loro, e che quindi possa andar perso il segnale SIGCHLD per ciascuno di loro. La soluzione è quindi un ciclo WHILE+WAIT(). Quest'ultimo legge lo stato di terminazione di ogni processo e dealloca le relative risorse.

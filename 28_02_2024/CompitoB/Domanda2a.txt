@@ -1,0 +1,18 @@
+Illustrare in modo approfondito il problema dei processi Zombie. Descrivere come possono essere usati i segnali
+per la gestione automatica dei processi Zombie.
+
+In generale, un processo quando termina, che sia in modo normale o anormale, comporta una serie di azioni da parte del sistema operativo. Quest'ultimo:
+
+1) Legge lo stato di ritorno nel PCB del processo, quindi comprende se il processo è terminato in modo normale o anormale. Si definisce terminazione NORMALE quando nel MAIN incontra una funzione exit() o return(). La terminazione ANORMALE si ha nel momento in cui il processo riceve ad esempio un segnale di terminazione dal kernel o da un altro processo.
+
+2) Se il processo termina in modo NORMALE, il SO si occupa di leggere il valore di ritorno che viene passato come parametro formale nella funzione di exit() o return().
+
+3) Viene deallocato il PCB del processo e tutte le sue informazioni.
+
+Diverso è il caso in cui a terminare è un processo FIGLIO. In questo caso le risorse del processo, quindi PCB e le relative informazioni, nonostante esso termini rimarranno allocate fino a quando il processo PADRE non ne legge lo stato di terminazione e quindi il relativo valore di ritorno se è terminato in modo NORMALE.
+Il processo padre necessita quindi di sincronizzarsi con la terminazione del processo figlio, cosicchè quest'ultimo non diventi ZOMBIE. Il processo creante quindi richiama l'API wait() o waitpid() che effettivamente permette la liberazione del PCB e delle risorse del figlio. Questa è una API bloccante, in quanto il processo padre viene bloccato se figlio non è terminato.
+Ricapitolando quindi, se il processo figlio è terminato e il padre è in esecuzione ma non si è ancora sincronizzato con la terminazione del figlio, allora le risorse dello stesso rimarranno allocate ed il processo verrà chiamato ZOMBIE. Lo status di ZOMBIE verrà rimosso non appena il processo padre si sincronizzerà con la terminazione del figlio.
+
+Può spesso capitare che il processo Padre non può eseguire immediatamente la System Call wait() poichè sta eseguendo una operazione di calcolo molto lunga. Allora si può sfruttare il meccanismo dei segnali per la sincronizzazione con il processo figlio. Sappiamo che alla terminazione di un processo figlio, il kernel consegna il segnale SIGCHLD al processo padre. Il comportamento di default è che il segnale viene ignorato. Per cui è possibile catturare il segnale definendone una apposita funzione di SIGNAL HANDLER che ne legga lo stato di ritorno ed il relativo valore di ritorno (se terminato in modo NORMALE) e che quindi possa deallocarne il relativo PCB e le informazioni associate al processo.
+Discorso analogo può essere fatto quando si hanno più processi figli. In questo senso, si aggiunge la problematica, legata al fatto che se più processi figli terminano quasi contemporaneamente (dato per certo che la memoria 'pending' dei segnali è limitata, un solo segnale pendente per ciascuna tipologia di evento) alcuni segnali pendenti potrebbero andare persi.
+La problematica si risolve con un ciclo while + wait() che permetta al padre di leggerne lo stato ed il valore di ritorno.

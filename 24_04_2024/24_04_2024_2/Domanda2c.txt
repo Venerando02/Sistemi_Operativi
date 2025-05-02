@@ -1,0 +1,59 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato, fornendo sia una
+descrizione testuale sia una descrizione tramite pseudo-codice.
+
+Uno dei problemi classici della sincronizzazione fra i processi è quello del produttore/consumatore con buffer limitato. A differenza del produttore/consumatore con blocco dati condiviso, nel quale ad una operazione di scrittura corrisponde una operazione di lettura. In questo caso, il processo produttore mantiene la sua produzione non curandosi che il consumatore abbia effettivamente consumato. Mantenendo dunque la produzione si arriverà al punto in cui il buffer di memoria si saturerà. A tal proposito è necessario un meccanismo di sincronizzazione che permetta dunque di bloccare il processo produttore quando il buffer è saturo e che lo sblocchi quando è stato letto, dal consumatore, almeno un elemento.
+Consideriamo dunque l'esempio di una coda, implementata tramite vettore, di dimensione pari a SIZE. I due processi produttore/consumatore si limitano dunque all'inserimento e l'estrazione di un elemento dalla coda. Dunque:
+- Il processo produttore inserisce un elemento in coda -> enqueue().
+- Il processo consumatore estrae un elemento dalla testa della coda -> dequeue().
+
+Al fine di risolvere questo problema di sincronizzazione abbiamo dunque bisogno di due semafori contatori e di un semaforo binario. Chiameremo i due semafori contatori 'posti_pieni' e 'posti_vuoti'. Mentre il semaforo binario lo chiameremo col nome di 'mutex'.
+Il funzionamento è dunque il seguente:
+
+- posti_pieni, inizializzato a 0:
+  - incremento ad ogni produzione.
+  - decremento ad ogni consumo.
+Serve dunque al processo consumatore per capire quanti elementi deve estrarre dalla testa della coda. 
+
+- posti_vuoti, inizializzato a SIZE:
+  - incremento ad ogni consumo.
+  - decremento ad ogni produzione.
+Server al processo produttore per capire quanti elementi liberi vi sono nella coda.
+Il semaforo binario/lock mutex che abbiamo chiamato 'mutex' viene dunque utilizzato per gestire la mutua esclusione tra le due operazioni svolte dai due processi. Lo pseudo - codice sarà dunque il seguente:
+
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+init(mutex, 1);
+
+void consumatore()
+{
+  message M;
+  while(TRUE)
+  {
+     P(posti_pieni);
+     P(mutex);
+     
+     M = dequeue();
+     
+     V(mutex);
+     V(posti_vuoti);
+     
+     consuma M;
+  }
+}
+
+
+void produttore()
+{
+  message M;
+  while(TRUE)
+  {
+     produci M;
+     P(posti_vuoti);
+     P(mutex);
+     
+     enqueue(M);
+     
+     V(mutex);
+     V(posti_pieni);
+  }
+}

@@ -1,0 +1,31 @@
+Discutere in modo dettagliato il meccanismo dei segnali. È richiesta la discussione dettagliata del ciclo di vita di
+un segnale. Descrivere inoltre i possibili comportamenti che un processo può assumere quando gli viene
+consegnato un segnale.
+
+Il sistema operativo gestisce per intero il ciclo di vita di ciascun processo, partendo dalla sua creazione fino alla sua terminazione. Nella gestione di ciascun processo, il sistema operativo molto spesso si ritrova a gestire una serie di eventi inaspettati, cioè:
+- Errori RUN-TIME, dovuti alla divisione per 0 oppure l'accesso ad aree di memoria proibite.
+- Terminazione di un processo figlio.
+- Comandi da parte dell'utente da shell, ad esempio CTRL+C.
+Questa tipologia di eventi vengono detti asincroni. Per la gestione di questi eventi viene dunque implementato un meccanismo di scambio di segnali. La gestione dei segnali è totalmente affidata al kernel del Sistema operativo. Un segnale può essere generato da:
+- Kernel per via di un evento asincrono.
+- Utente, digitando dei particolari comandi da tastiera come ad esempio il classico CTRL+C che corrisponde al segnale SIGINT.
+- Un processo può richiedere al kernel di inviare un segnale ad un altro processo al fine di sincronizzazione con esso.
+Ciascun segnale presenta il seguente ciclo di vita:
+- Un evento, detto anche asincrono, porta alla creazione di un segnale da parte del kernel.
+- Il kernel si occupa dunque di accodare questo segnale, detto pendente, nel PCB del processo destinatario.
+- Il segnale viene dunque consegnato al processo destinatario.
+Il kernel del sistema operativo si occupa dunque della consegna del segnale al processo destinatario, viene dunque modificato il relativo campo nel PCB del processo. In generale, ciascun processo ha un limite di memorizzazione dei segnali pendenti. 
+In Linux ciascun processo può memorizzare un solo segnale pendente per ciascuna tipologia di evento. Esiste la cosiddetta PENDING SIGNAL BITMAP che è un vettore binario lungo 64 tale che, se per l'evento X il bit è impostato ad 1, allora significa che esiste il segnale pendente per quella tipologia di evento. Eventuali altri segnali dello stesso tipo verranno dunque ignorati.
+Ciascun segnale pendente verrà consegnato quando:
+- Il processo destinatario è in esecuzione, durante l'esecuzione.
+- Il processo destinatario è in stato di pronto, viene rischedulato e messo in esecuzione.
+Un processo può comunque bloccare la ricezione da parte del segnale pendente quando ad esempio deve eseguire delle parti di codice che non possono essere bloccate. Ma può anche sbloccarne la ricezione. Questo comportamento non può essere comunque adottato per tutte le tipologie di segnale.
+In generale il comportamento di default di un processo dipende dal tipo di segnale che ha ricevuto. In generale può essere uno dei seguenti:
+- Il processo ignora il segnale, ciò non vale per SIGKILL e SIGSTOP.
+- Il processo termina. In tal caso parliamo di terminazione ANORMALE.
+- Il processo termina. Viene generato un 'Core Dump File' che visualizza l'intero stato del processo.
+- Il processo viene messo in stato di STOP (Stato 'T') mediante il segnale SIGSTOP. Che può essere interrotto solo alla ricezione di un altro segnale, ovvero SIGCONT.
+Ciascun processo può invece chiedere al kernel di impostare uno dei seguenti comportamenti alla ricezione di un segnale:
+- Il processo ignora il segnale. Non vale per SIGKILL e SIGSTOP.
+- Il processo attua un comportamento di default.
+- Il processo definisce una porzione di codice da eseguire alla ricezione di un segnale, tramite una funzione di Signal Handler. In tal caso il segnale viene catturato e il SO forza il processo ad eseguire la funzione di signal handler. Il programma riprenderà nel punto in cui si era interrotto.

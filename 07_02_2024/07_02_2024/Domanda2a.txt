@@ -1,0 +1,35 @@
+Illustrare il concetto di processo con riferimento agli stati che attraversa. Descrivere le strutture dati che il kernel
+utilizza per gestire i processi. Descrivere cosa è il context switching (il cambio di contesto) nella schedulazione
+dei processi.
+
+Un processo è l'esecuzione materiale di un programma sotto il controllo del sistema operativo. Sappiamo che un programma è una sequenza di istruzioni statica, il processo è dunque l'esecuzione del programma.
+Il Sistema Operativo dunque si occupa dell'intera gestione del ciclo di vita di un processo, partendo dalla sua creazione fino alla sua terminazione. Un processo attraversa diversi stati:
+- Nuovo (New), indica che il processo è stato creato e caricato in memoria.
+- Esecuzione (Running), indica che al processo è stata assegnata la risorsa CPU.
+- Pronto (Ready), indica che il processo è logicamente pronto e in attesa della risorsa processore.
+- Attesa (Wait), indice che il processo è dunque in attesa di un evento. Quest'ultimo può essere la ricezione di un segnale o una eventuale iterazione di I/O.
+- Terminazione (Terminating), dunque indica che un processo è terminato e le sue risorse sono state deallocate.
+Per ciascun processo si ha l'allocazione di una struttura dati caratterizzata dalla seguente organizzazione:
+- Sezione codice: contiene l'intero codice del programma.
+- Sezione dati: contene variabili statiche del programma.
+- Stack: contiene parametri formali, valori di ritorno e variabili locali.
+- Heap: contiene tutto ciò che riguarda l'allocazione dinamica della memoria.
+Il sistema operativo tiene controllo dello stato del processo mediante il Process Control Block (PCB), che è una struttura dati caratterizzata da una serie di informazioni, cioè:
+- PID del processo.
+- Stato del processo (Ready, Wait, Running ecc.).
+- Copia dei registri della CPU:
+  - Puntatore all'istruzione successiva del processo (Program Counter).
+  - Puntatore all'area Stack (Stack Pointer).
+- Informazioni di I/O (dunque descrittori di file).
+- Elenco di segnali pendenti. Dunque in LINUX dispone della cosiddetta PENDING SIGNAL BITMAP, che è un vettore binario lungo 64.
+- Informazioni utili allo scheduling dei processi (ad esempio priorità).
+- Informazioni di accounting: Tempi di utilizzo della CPU.
+- Valori di ritorno (ritornati mediante la funzione exit()).
+
+Nei sistemi multiprogrammati, vengono caricati in memoria più processi. Dunque il compito del Sistema Operativo è dunque quello di andare a massimizzare l'utilizzo della CPU nella gestione dei processi e andare a minimizzare lo spreco di memoria legato al caricamento dei processi. A tal fine il SO offe il servizio dello scheduler dei processi. Esistono tre tipologie di scheduler dei processi:
+- Scheduler a breve termine.
+- Scheduler a medio termine.
+- Scheduler a lungo termine.
+
+In particolare, lo scheduler a breve termine permette di assegnare la CPU ai processi nella coda dei processi in stato di PRONTO. In tal senso l'elemento che assegna materialmente la CPU ai processi è il DISPATCHER. Esso introduce dunque il fenomeno del CONTEXT SWITCH, ossia il cambio di contesto.
+Il context switch si ha quando un processo passa da stato di esecuzione a stato di attesa o pronto, in tal senso il compito dello scheduler a breve termine è quello di selezionare un nuovo processo nella coda. A tal proposito viene salvato il CONTESTO del processo che era in esecuzione nel suo PCB, dunque vengono salvate le informazioni legate allo stack, descrittori di file, registri e tutto i dati del processo nel suo PCB. Vengono dunque caricate, dal PCB del processo scelto dallo scheduler, le informazioni legato allo stack, descrittori di file, registri e tutti gli altri dati del processo in questione. L'operazione del cambio di contesto si dice dunque overhead, dunque indipendente dall'esecuzione del processo e viene eseguita dal DISPATCHER.

@@ -1,0 +1,26 @@
+Descrivere in modo dettagliato la gestione dei file (File System) con particolare riferimento a Linux. Illustrare le
+strutture dati necessarie alla gestione dei file.
+
+Nei sistemi UNIX/LINUX alla creazione di ciascun processo è associata la creazione di una tabella dei descrittori (tabella dei file aperti). Quindi alla apertura o creazione da parte di un file viene definito un descrittore di file, ossia un valore intero non negativo che rappresenta l'effettivo canale di comunicazione tra Processo e File ed indica essenzialmente un canale di INPUT/OUTPUT. Il descrittore viene utilizzato al fine di indicizzare la tabella dei descrittori di file, mantenuta per ciascun processo. Alla creazione di quest'ultimo, le prime tre locazioni della tabella sono inizializzate con 3 indici:
+
+1) 0 rappresenta lo standard input (stdin).
+2) 1 rappresenta lo standard output (stdout).
+3) 2 rappresenta lo standard error (stderr).
+
+Ciascun descrittore punta ad un elemento della tabella dei file aperti di tutti processi, che viene mantenuta dal Sistema Operativo. All'interno della tabella dei file aperti di tutti i processi viene mantenuto un puntatore, ossia il FILE POINTER, che rappresenta il numero di byte letti o scritti in seguito ad una operazione di INPUT/OUTPUT sul file. 
+Alla apertura o creazione di ciascun processo il SO si occupa di caricare in memoria una struttura detta I-Node. Quest'ultimo contiene una serie di informazioni quali: 
+
+1) Appartenenza.
+2) Modalità di accesso (lettura/scrittura).
+3) Dimensione.
+4) Tempi di creazione ed utilizzo.
+5) Indirizzi utili per l'accesso al supporto fisico. 
+
+Ciascun I-Node fa parte della tabella degli I-Node che viene quindi gestita dal Sistema Operativo.
+Ricapitolando quindi, i sistemi UNIX/LINUX utilizzano una gerarchia di 3 tabelle per la gestione dei file:
+
+1) Tabella dei descrittori di file, situata nel PCB di ciascun processo.
+2) Tabella dei file aperti di tutti i processi, gestita per intero dal SO e che contiene per ciascun file il FILE POINTER.
+3) Tabella degli I-Node, che contiene le informazioni per l'accesso al supporto fisico del file.
+
+I processi che dunque vogliono accedere allo stesso file, avranno entry separate nella tabella file aperti di tutti i processi, ma avranno lo stesso I-Node.

@@ -1,0 +1,20 @@
+Descrivere le funzioni della libreria pthread che corrispondono, rispettivamente, a fork(), wait() ed exit() per i
+processi, spiegando come funzionano, cosa rappresentano gli argomenti che ricevono e quali effetti determinano
+(NON si tratta di riportarne i prototipi, ma di spiegare in modo esaustivo quanto sopra richiesto).
+
+Le funzioni della libreria pthread che corrispondo, rispettivamente, a fork(), wait() ed exit() per i processi, sono le seguenti:
+- int pthread_create();
+- int pthread_join();
+- void pthread_exit();
+
+Gli odierni Sistemi Operativi, essendo dotati di un kernel Multithread, adottano il modello uno-ad-uno di gestione dei thread dei processi. Dunque significa che alla creazione di un thread utente si ha la creazione di un thread a livello kernel. A tal proposito, la funzione pthread_create() mi permette di andare a creare all'interno di un processo un nuovo kernel thread. Al fine della creazione del kernel thread è dunque necessario andare a definire lo user thread tramite una funzione che ha come parametro formale un puntatore generico (void*) e restituisce un puntatore generico (void*). I parametri che vengono passati nella system call pthread_create() sono dunque i seguenti:
+- tid, che rappresenta l'indirizzo al Thread identifier del nuovo thread.
+- attr, rappresenta l'indirizzo alla struct che definisce gli attributi di un thread.
+- StartRoutine, definisce la funzione che dovrà eseguire il nuovo thread.
+- arg, rappresenta il valore passato alla funzione come puntatore generico (void*).
+
+Di default, quando andiamo a creare un thread, esso è Joinable. Dunque significa che alla sua terminazione, le sue risorse rimangono allocate fino a quando un altro thread non libera le sue risorse richiamando la funzione pthread_join() ed acquisendo il valore calcolato dal thread che viene ritornato tramite puntatore generico (void*). La pthread_join() è dunque una funzione bloccante, ossia blocca il thread che la richiama, fino a quando il thread specificato come parametro non termina. I parametri della pthread_join sono i seguenti:
+- tid, rappresenta il thread identifier del thread che che si vuole terminare.
+- ValuePtr, rappresenta dunque il valore ritornato dal thread che è terminato.
+
+Possiamo dunque dire che un thread termina quando viene richiamata la funzione return() oppure la funzione pthread_exit(), quest'ultima dunque permette dunque al thread di terminare e permette dunque la restituzione di un valore come puntatore generico, dunque (void*), che verrà dunque acquisito dal thread che andrà a richiamare la pthread_join().

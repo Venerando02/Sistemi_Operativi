@@ -1,0 +1,67 @@
+Descrivere in modo dettagliato il problema del produttore/consumatore con buffer limitato, fornendo sia una
+descrizione testuale sia una descrizione tramite pseudo-codice.
+
+Uno dei problemi classici di sincronizzazione è quello del produttore/consumatore con buffer limitato di memoria. A differenza del produttore - consumatore con blocco dati condiviso nel quale ad una operazione di lettura corrisponde una operazione di scrittura, il produttore continua ad eseguire la sua operazione di scrittura sul buffer non preoccupandosi che il consumatore abbia effettivamente letto il dato. Si arriverà quindi al punto che il buffer limitato di memoria si saturerà, ossia verrà riempito.
+Il punto quindi fondamentale sta nell'implementare un meccanismo di sincronizzazione che permetta di bloccare il processo produttore quando il buffer è pieno e che lo sblocchi nel momento in cui il consumatore abbia effettivamente letto almeno un elemento.
+Sono quindi necessari per la risoluzione di questo problema 3 semafori: due contatori ed un lock mutex o semaforo binario.
+Supponiamo di avere ad esempio una coda, implementata tramite vettore di dimensione pari a SIZE.
+Le operazioni dei due processi sono le seguenti:
+
+a) Il processo produttore si occupa quindi dell'inserimento in coda. Chiamiamo l'operazione enqueue().
+b) Il processo consumatore estrae dalla testa della coda un elemento. Chiamiamo l'operazione dequeue().
+
+Consideriamo 2 semafori contatori: posti_pieni e posti_vuoti.
+
+a) posti_pieni, inizializzato a 0:
+
+- Viene incrementato ad ogni produzione.
+- Viene decrementato ad ogni consumo.
+
+servirà al processo consumatore per capire quanti elementi deve estrarre dalla coda.
+
+b) posti_vuoti, inizializzato a SIZE:
+
+- Viene decrementato ad ogni produzione.
+- Viene incrementato ad ogni consumo.
+
+Serve al processo produttore per capire se la coda è effettivamente piena oppure no.
+
+c) mutex, inizializzato ad 1, serve a gestire la mutua esclusione tra le operazioni dei due processi.
+
+PSEUDO - CODICE: 
+
+init(posti_pieni, 0);
+init(posti_vuoti, SIZE);
+init(mutex, 1);
+
+void consumatore() 
+{
+  message m;
+  while(TRUE)
+  {
+    P(posti_pieni);
+    P(mutex);
+    
+    m = dequeue();
+    
+    V(mutex);
+    V(posti_vuoti);
+    consuma m;
+  }
+}
+
+void produttore() 
+{
+  message m;
+  while(TRUE)
+  {
+    produci m;
+    P(posti_vuoti);
+    P(mutex);
+    
+    enqueue(m);
+    
+    V(mutex);
+    V(posti_pieni);
+  }
+}

@@ -1,0 +1,45 @@
+Spiegare in modo dettagliato in cosa consiste il problema dello scheduling a breve termine. Spiegare inoltre la
+differenza tra scheduler preemptive e non preemptive. Infine descrivere due algoritmi di scheduling a scelta
+dello studente (uno preemptive e uno non preemptive).
+
+Il problema dello scheduling a breve termine nasce nel momento in cui si ha a che fare con dei sistemi multiprogrammati. Dunque vengono caricati più processi in memoria. In questo senso il compito del Sistema Operativo è molteplice. Esso deve cercare sia di massimizzare l'utilizzo della CPU che viene assegnata ai fini dell'esecuzione dei processi. Ed inoltre deve cercare di utilizzare la memoria in maniera efficace. 
+Fondamentalmente il SO offre il meccanismo dello scheduler ai fini della gestione efficace della CPU. 
+Il compito del Sistema Operativo è infatti quello di massimizzare le risorse di calcolo che si hanno a disposizione, a questo fine usa lo SCHEDULER A BREVE TERMINE.
+Questo servizio ha il compito di andare a selezionare i processi da eseguire all'interno della lista dei processi in stato di PRONTO. L'elemento chiave in questo senso è il DISPATCHER. Che si occupa materialmente di assegnare al processo, scelto dallo scheduler, la CPU. Ovviamente lo scheduler selezione i processi all'interno di una lista, il cui elemento chiave è il PCB.
+Esistono due tipologie di scheduler: 
+
+1) Scheduler PREEMPTIVE.
+2) Scheduler NOT PREEMPTIVE.
+
+Lo scheduler PREEMPTIVE può andare prelazionare la CPU ad un processo quando questo passa:
+
+1) Da stato di esecuzione ad attesa.
+2) Da stato di esecuzione a pronto.
+3) Da stato di attesa a Pronto.
+4) Termina.
+
+In ciascuno dei seguenti casi lo scheduler decide a quale processo riassegnare la CPU.
+Per lo scheduler PREEMPTIVER distinguiamo i seguenti algoritmi: RR (Round Robin) ed SRTF (Shortest Remaining Time First).
+
+Lo scheduler NOT PREEMPTIVE invece non può prelazionare di sua sponte la CPU ad un processo, a meno che si sospenda oppure termini. Lo scheduler NOT PREEMPTIVE deve decidere la riassegnazione della CPU ad un altro processo nella lista dei processi in stato di pronto se dunque un processo passa:
+
+1) Da stato di esecuzione ad attesa.
+2) Termina.
+
+Gli algoritmi NOT PREEMPTIVE che conosciamo sono: FCFS (First Come First Served), SJF (Shortest Job First), PS (Priority Scheduling).
+
+Analizziamo come algoritmo NOT PREEMPTIVE il FCFS. Quest'ultimo gestisce i processi come una coda FIFO. Quindi lo scheduler assegna la CPU ai processi nell'ordine cui la richiedono. Quindi seleziona i processi da eseguire estraendo la testa della coda. Mentre i processi in stato di PRONTO verranno dunque inseriti in coda. 
+Si tratta di un algoritmo NOT PREEMPTIVE per cui lo scheduler non può andare a prelazionare la CPU ai processi, a meno che si sospendano o terminino.
+I vantaggi legati all'utilizzo di questo algoritmo sono la facile comprensione e la conseguente implementazione.
+Lo svantaggio è legato ai tempi medi di attesa variabili, dovuti all'ordine entro la quale i processi entrano in coda FIFO. Potrebbe dunque capitare che processi I/O Bound che hanno tempi di esecuzione brevi attendino processi CPU Bound che hanno invece dei tempi di esecuzione molto più lunghi.
+
+L'algoritmo PREEMPTIVE che analizziamo è il RR (Round Robin). Quest'ultimo è una forma di FCFS con prelazione della CPU. I processi dunque vengono gestiti come una coda FIFO. I processi vengono dunque eseguiti per un certo periodo di tempo, il cosiddetto 'Time Quantum' o tempo di quanto. Allo scadere del tempo di quanto si possono dunque verificare due scenari:
+
+1) Il processo termina entro il tempo di quanto. In questo caso, viene rilasciata la CPU, che verrà riassegnata ad un altro processo nella coda dei processi in stato di PRONTO.
+
+2) Il processo non termina entro il tempo di quanto. In questo caso, appena scade il timer, viene lanciato un interrupt, per cui il processo viene reinserito in coda, e lo scheduler riassegna la CPU al processo successivo nella testa della coda. 
+
+E' dunque chiaro come lo svantaggio fondamentale sia legato alla scelta del tempo di quanto. Quest'ultimo influenza il numero di cambi di contesto ai fini del completamento del processo. Dunque la scelta è fondamentale poichè:
+
+1) Un 'Time Quantum' lungo fa degnerare l'algoritmo in un FCFS.
+2) Un 'Time Quantum' corto provoca un notevole aumento dei tempi di commutazione/gestione del processo. 

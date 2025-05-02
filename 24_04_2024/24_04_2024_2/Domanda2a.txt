@@ -1,0 +1,19 @@
+Descrivere in modo dettagliato la gestione dei file (File System) con particolare riferimento a Linux. Illustrare le
+strutture dati necessarie alla gestione dei file.
+
+Nei sistemi UNIX/LINUX per ciascun processo si ha una tabella dei descrittori di file (file aperti). In generale alla creazione o apertura di un file viene generato un descrittore di file, nonchè un valore intero non negativo che rappresenta un canale effettivo di INPUT/OUTPUT tra processo e file. Il descrittore viene dunque utilizzato per indicizzare la tabella dei descrittori di file per ciascun processo. Alla creazione di ciascun processo, di default, le prime tre locazioni della tabella dei descrittori saranno le seguenti:
+- 0, rappresenta lo standard input, stdin.
+- 1, rappresenta lo standard output, stdout.
+- 2, rappresenta lo standard error, stderr.
+Ciascun descrittore di file della tabella punta ad un elemento della tabella dei file aperti di tutti processi che viene gestita dal Sistema Operativo. In essa è inoltre contenuto il cosiddetto file pointer per ciascun file. Esso indica proprio il numero di byte letti/scritti sul file in seguito ad una operazione di Input/Output. Dunque una successiva operazione di Input/Output sul file partirà dal valore in byte indicato dal file pointer.
+Alla creazione o apertura di ciascun file, si ha dunque il caricamento in memoria di una struttura chiamata I-Node da parte del sistema operativo. Questa struttura contiene una serie di informazioni, cioè:
+- Appartenenza del file.
+- Modalità di accesso (lettura/scrittura) sul file. 
+- Dimensione del file.
+- Tempi di creazione e modifica.
+- Indirizzi utili per l'accesso fisico al file.
+Ciascun I-Node fa parte di una tabella, ovvero la tabella degli I-Node di gestione del Sistema Operativo. In sintesi LINUX utilizza una gerarchia di 3 tabelle nella gestione dei file:
+- Tabella dei descrittori di file (file aperti) per processo.
+- Tabella dei file aperti per tutti i processi.
+- Tabella degli I-Node.
+Possiamo aggiungere dunque che, se si hanno due processi indipendenti che accedono allo stesso file, avranno entry diverse nella tabella dei file aperti di tutti i processi, ma avranno comunque lo stesso file pointer.

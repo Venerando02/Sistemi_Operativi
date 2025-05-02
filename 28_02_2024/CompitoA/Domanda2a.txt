@@ -1,0 +1,26 @@
+Descrivere in modo dettagliato il principio di funzionamento dei segnali nei Sistemi Operativi e, facendo
+riferimento a Linux si parli delle informazioni memorizzate nel PCB finalizzate alla gestione dei segnali. Si parli
+anche dei limiti dei segnali, sempre facendo riferimento a Linux.
+
+Sappiamo che il SO gestisce l'intero ciclo di vita di ciascun processo, passando quindi dalla sua creazione alla sua terminazione. Durante l'esecuzione di ciascun processo il SO si ritrova a gestire una serie di eventi inaspettati, detti anche 'asincroni'. In generale i principali sono:
+
+1) Errori RUN-TIME, generati ad esempio da una divisione per zero oppure l'accesso ad un indirizzo di memoria proibito.
+2) Terminazione di un processo figlio.
+3) Richiesta di terminazione di un processo, generato tramite comandi da shell, ad esempio CTRL+C.
+
+Quindi per la gestione di questo tipo di eventi, Il SO utilizza il meccanismo dei segnali. Questi ultimi sono di totale gestione del Sistema Operativo. Esistono diverse tipologie di segnali a seconda del tipo di evento con la quale si ha a che fare.
+Possono essere generati dal Kernel, sulla base di un particolare evento, oppure da un utente digitando dei particolari comandi da shell come CTRL+C oppure un processo può richiederne l'utilizzo ai fini della sincronizzazione con un altro processo.
+In generale il ciclo di vita di un segnale e' il seguente:
+
+1) Un evento asincrono porta il kernel alla generazione di un segnale.
+2) Il segnale, detto anche pendente, viene accodato al processo destinatario.
+3) Il segnale quindi viene consegnato al processo destinatario.
+
+Il Kernel è colui che si occupa di consegnare il segnale pendente al destinatario, accodandolo al PCB del processo. In generale, vi è un limite sul numero di segnali pendenti che possono essere ricevuti per ciascun processo.
+In LINUX, nello specifico, esiste nel PCB di ciascun processo la cosiddetta PENDING SIGNAL BITMAP, che è un vettore binario lungo 64, tale che se per l'evento X ho il bit impostato a 1, allora significa che per quell'evento esiste già il segnale pendente. In LINUX abbiamo quindi il limite di un solo segnale pendente per ciascuna tipologia di evento, per cui se già è stato memorizzato il segnale pendente per quella tipologia, gli altri segnali andranno persi. 
+Il segnale verrà quindi consegnato al processo destinatario in fase di esecuzione durante l'esecuzione del processo, oppure se è in stato di pronto esso verrà consegnato nel momento in cui è stata assegnata la CPU al processo.
+Il meccaniscmo dei segnali presenta essenzialmente due limiti fondamentali:
+
+1) La memoria 'PENDING' dei segnali è limitata, in LINUX possiamo memorizzare un unico segnale pending per ciascuna tipologia di evento.
+
+2) I segnali possono essere utilizzati per la sincronizzazione tra i processi ma non trasportano dati. E' quindi fondamentale nella programmazione parallela/concorrente lo scambio di informazioni tra i processi. Il meccanismo dei segnali non può essere utilizzato. In generale il SO implementa, per lo scambio di dati, il meccanismo delle shared memory e socket.

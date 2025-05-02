@@ -1,0 +1,22 @@
+Descrivere le funzioni della libreria pthread che corrispondono, rispettivamente, a fork(), wait() ed exit() per i
+processi, spiegando come funzionano, cosa rappresentano gli argomenti che ricevono e quali effetti determinano
+(NON si tratta di riportarne i prototipi, ma di spiegare in modo esaustivo quanto sopra richiesto).
+
+Nella libreria POSIX pthread le System Calls/API che corrispondono rispettivamente a fork(), wait() ed exit() sono le seguenti:
+- int pthread_create();
+- int pthread_join();
+- void pthread_exit();
+
+Gli odierni Sistemi Operativi, dunque UNIX/LINUX, Windows e Solaris, disponogono di un kernel di tipo multithread al fine di adottare un modello di gestione dei thread di tipo uno ad uno. Significa dunque che alla creazione di un thread utente si ha la creazione di un thread a livello kernel. 
+In tal senso la funzione pthread_create() che, dalla convenzione POSIX restituisce un codice di errore in caso di fallimento e 0 in caso di successo, ci permette di andare a creare un kernel thread secondario al MAIN THREAD che di default si ha all'interno di ciascun processo. Tale API/System Call associa alla creazione di un kernel thread un user thread che viene rappresentato come una funzione che ha come parametro formale un puntatore generico (void*) e ritorna un puntatore generico (void*). 
+I parametri formali della funzione pthread_create sono dunque i seguenti:
+- tid, indica l'indirizzo dell'identificativo del thread.
+- attr, indicano gli attributi associati alla creazione del thread. Metteremo NULL per settarli con i valori di default.
+- Start Routine, è la funzione associata al nuovo kernel thread.
+- arg, indica l'argomento passato alla funzione.
+
+Di default sappiamo che la creazione di ciascun thread è di tipo sincrono. Il thread creato dunque è di tipo JOINABLE. Ciò vuol dire che le risorse del thread in questione non vengono liberate dal SO alla sua terminazione, ma si ha la necessità di un altro thread che si sincronizzi con la sua terminazione e permetta la liberazione delle sue risorse dal Sistema Operativo. Al fine dunque di eseguire questa azione, un qualunque thread deve richiamare la pthread_join(). Questa funzione ha due parametri, dunque il tid del processo in questione e l'indirizzo di un puntatore generico (void**) al fine di permettere la restituzione del parametro calcolato dal thread.
+
+Sappiamo inoltre che un processo termina quando uno dei suoi thread richiama la funzione exit(), un esempio è dato proprio dal main thread. In tal senso, la terminazione di UN THREAD è data dal richiamo delle funzioni return() o pthread_exit() ed entrambe devono restituire un puntatore generico (void*).
+La funzione pthread_exit() permette la terminazione di un thread di tipo Joinable e dunque la restiutuzione di un elemento tramite puntatore generico (void*). Non avrebbe dunque avuto senso restituire alcun elemento come parametro formale della pthread_exit() nel caso in cui il thread in questione fosse stato detached, in quanto non vi sarebbe stato alcun thread che avrebbe potuto richiamare la pthread_join() e dunque acquisire il valore di ritorno del thread. 
+
